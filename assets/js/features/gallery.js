@@ -4,24 +4,23 @@
   "use strict";
   var WB = window.WB || { qsa: function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); }, reduce: false };
   var galleries = WB.qsa("[data-gallery]");
-  if (!galleries.length) return;
+  if (!galleries.length && !WB.qsa("[data-filter]").length) return;
 
   /* ---------- Filter ---------- */
   WB.qsa("[data-filter]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var cat = btn.getAttribute("data-filter");
       WB.qsa("[data-filter]").forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); });
-      galleries.forEach(function (g) {
-        WB.qsa("[data-lightbox]", g).forEach(function (it) {
-          var show = cat === "all" || it.getAttribute("data-cat") === cat;
-          it.hidden = !show;
-          if (show) { it.classList.remove("is-in"); void it.offsetWidth; it.classList.add("is-in"); }
-        });
+      WB.qsa("[data-cat]").forEach(function (it) {
+        var show = cat === "all" || it.getAttribute("data-cat") === cat;
+        it.hidden = !show;
+        if (show) { it.classList.remove("is-in"); void it.offsetWidth; it.classList.add("is-in"); }
       });
     });
   });
 
   /* ---------- Lightbox ---------- */
+  if (!galleries.length) return;
   var box = document.createElement("div");
   box.className = "lightbox";
   box.setAttribute("role", "dialog");

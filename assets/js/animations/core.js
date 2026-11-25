@@ -8,6 +8,8 @@
   WB.reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   WB.fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   WB.small = window.matchMedia("(max-width: 720px)").matches;
+  var fx = (root.getAttribute("data-fx") || "").split(/\s+/);
+  WB.off = function (name) { return fx.indexOf("no-" + name) > -1; }; // effects switched off in the Control Panel
 
   WB.qsa = function (sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); };
   WB.clamp = function (v, a, b) { return Math.min(b, Math.max(a, v)); };

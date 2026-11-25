@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var WB = window.WB;
-  if (!WB || WB.reduce) return;
+  if (!WB || WB.reduce || WB.off("petals")) return;
 
   var COLORS = ["#E9B9BF", "#D98C98", "#B76E79", "#F3D3D3", "#C9A27A", "#F6E3DC"];
 

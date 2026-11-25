@@ -1,0 +1,17 @@
+{
+  "colors": {
+    "berry": "#7A1F3D",
+    "rose": "#B76E79",
+    "gold": "#C9A27A",
+    "ivory": "#FBF7F2",
+    "ink": "#2A1F24"
+  },
+  "fonts": "classic",
+  "effects": {
+    "preloader": true,
+    "petals": true,
+    "cursor": true,
+    "pageTransitions": true,
+    "marquee": true
+  }
+}

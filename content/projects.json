@@ -1,0 +1,101 @@
+[
+  {
+    "title": "[Couple names 1]",
+    "venue": "[Venue, city]",
+    "date": "",
+    "category": "[Category A]",
+    "featured": true,
+    "cover": "assets/images/placeholder-01.svg",
+    "images": [
+      "assets/images/placeholder-01.svg",
+      "assets/images/placeholder-02.svg",
+      "assets/images/placeholder-04.svg",
+      "assets/images/placeholder-05.svg"
+    ],
+    "story": [
+      "[Project story.]"
+    ]
+  },
+  {
+    "title": "[Couple names 2]",
+    "venue": "[Venue, city]",
+    "date": "",
+    "category": "[Category B]",
+    "featured": true,
+    "cover": "assets/images/placeholder-04.svg",
+    "images": [
+      "assets/images/placeholder-04.svg",
+      "assets/images/placeholder-03.svg",
+      "assets/images/placeholder-06.svg",
+      "assets/images/placeholder-08.svg"
+    ],
+    "story": [
+      "[Project story.]"
+    ]
+  },
+  {
+    "title": "[Couple names 3]",
+    "venue": "[Venue, city]",
+    "date": "",
+    "category": "[Category C]",
+    "featured": true,
+    "cover": "assets/images/placeholder-06.svg",
+    "images": [
+      "assets/images/placeholder-06.svg",
+      "assets/images/placeholder-07.svg",
+      "assets/images/placeholder-09.svg",
+      "assets/images/placeholder-02.svg"
+    ],
+    "story": [
+      "[Project story.]"
+    ]
+  },
+  {
+    "title": "[Couple names 4]",
+    "venue": "[Venue, city]",
+    "date": "",
+    "category": "[Category A]",
+    "featured": false,
+    "cover": "assets/images/placeholder-09.svg",
+    "images": [
+      "assets/images/placeholder-09.svg",
+      "assets/images/placeholder-01.svg",
+      "assets/images/placeholder-05.svg"
+    ],
+    "story": [
+      "[Project story.]"
+    ]
+  },
+  {
+    "title": "[Couple names 5]",
+    "venue": "[Venue, city]",
+    "date": "",
+    "category": "[Category B]",
+    "featured": false,
+    "cover": "assets/images/placeholder-03.svg",
+    "images": [
+      "assets/images/placeholder-03.svg",
+      "assets/images/placeholder-08.svg",
+      "assets/images/placeholder-07.svg"
+    ],
+    "story": [
+      "[Project story.]"
+    ]
+  },
+  {
+    "title": "[Couple names 6]",
+    "venue": "[Venue, city]",
+    "date": "",
+    "category": "[Category C]",
+    "featured": false,
+    "cover": "assets/images/placeholder-07.svg",
+    "images": [
+      "assets/images/placeholder-07.svg",
+      "assets/images/placeholder-04.svg",
+      "assets/images/placeholder-06.svg"
+    ],
+    "story": [
+      "[Project story.]"
+    ]
+  }
+]

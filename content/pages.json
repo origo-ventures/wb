@@ -1,0 +1,193 @@
+{
+  "nav": {
+    "about": "About",
+    "services": "Services",
+    "portfolio": "Portfolio",
+    "team": "Team",
+    "cta": "Enquire"
+  },
+  "footer": {
+    "copyright": "Wedding Berries. All rights reserved."
+  },
+  "cta": {
+    "eyebrow": "Begin here",
+    "title": "Let’s plan your day",
+    "text": "[Short invitation to get in touch.]",
+    "btn1": {
+      "text": "Enquire now",
+      "link": "contact.html"
+    },
+    "btn2": {
+      "text": "View our work",
+      "link": "portfolio.html"
+    }
+  },
+  "home": {
+    "eyebrow": "Your story, our art",
+    "title": "Every Love Story Deserves a Beautiful Beginning",
+    "lead": "Creating unforgettable wedding experiences.",
+    "btn1": {
+      "text": "Explore our work",
+      "link": "portfolio.html"
+    },
+    "btn2": {
+      "text": "Enquire",
+      "link": "contact.html"
+    },
+    "marquee": [
+      {
+        "text": "Your story, our art"
+      },
+      {
+        "text": "Wedding Berries"
+      }
+    ],
+    "showStats": true,
+    "stats": [
+      {
+        "value": "250",
+        "suffix": "+",
+        "label": "[Stat label]"
+      },
+      {
+        "value": "12",
+        "suffix": "",
+        "label": "[Stat label]"
+      },
+      {
+        "value": "1200",
+        "suffix": "+",
+        "label": "[Stat label]"
+      },
+      {
+        "value": "8",
+        "suffix": " yrs",
+        "label": "[Stat label]"
+      }
+    ],
+    "showServices": true,
+    "servicesEyebrow": "What we do",
+    "servicesTitle": "[Services headline]",
+    "servicesLead": "[One sentence introducing the services.]",
+    "showWork": true,
+    "workEyebrow": "Selected work",
+    "workTitle": "[Portfolio headline]",
+    "showAbout": true,
+    "aboutEyebrow": "About us",
+    "aboutTitle": "[About headline]",
+    "aboutLead": "[Two or three sentences about Wedding Berries.]",
+    "aboutImage": "assets/images/placeholder-05.svg",
+    "showCountdown": true,
+    "countdownEyebrow": "Your big day",
+    "countdownTitle": "How many days until “I do”?",
+    "showTestimonial": true
+  },
+  "about": {
+    "eyebrow": "About us",
+    "title": "Our story",
+    "lead": "[Short introduction to Wedding Berries.]",
+    "storyEyebrow": "Who we are",
+    "storyTitle": "[Story headline]",
+    "story": [
+      "[Founding story paragraph.]",
+      "[Second paragraph.]"
+    ],
+    "image": "assets/images/placeholder-06.svg",
+    "principlesEyebrow": "What we stand for",
+    "principlesTitle": "Our principles",
+    "principles": [
+      {
+        "title": "[Principle one]",
+        "text": "[Explanation.]"
+      },
+      {
+        "title": "[Principle two]",
+        "text": "[Explanation.]"
+      },
+      {
+        "title": "[Principle three]",
+        "text": "[Explanation.]"
+      }
+    ],
+    "showTimeline": true,
+    "timelineEyebrow": "Our journey",
+    "timelineTitle": "Moments that shaped us",
+    "timeline": [
+      {
+        "year": "[Year]",
+        "title": "[Milestone 1]",
+        "text": "[Short description of this moment.]"
+      },
+      {
+        "year": "[Year]",
+        "title": "[Milestone 2]",
+        "text": "[Short description of this moment.]"
+      },
+      {
+        "year": "[Year]",
+        "title": "[Milestone 3]",
+        "text": "[Short description of this moment.]"
+      },
+      {
+        "year": "[Year]",
+        "title": "[Milestone 4]",
+        "text": "[Short description of this moment.]"
+      }
+    ]
+  },
+  "services": {
+    "eyebrow": "What we do",
+    "title": "Our services",
+    "lead": "[Short introduction.]",
+    "processEyebrow": "How we work",
+    "processTitle": "Our process",
+    "process": [
+      {
+        "title": "[Step one]",
+        "text": "[Description.]"
+      },
+      {
+        "title": "[Step two]",
+        "text": "[Description.]"
+      },
+      {
+        "title": "[Step three]",
+        "text": "[Description.]"
+      }
+    ]
+  },
+  "portfolio": {
+    "eyebrow": "Selected work",
+    "title": "Portfolio",
+    "lead": "[Short introduction.]",
+    "allLabel": "All"
+  },
+  "team": {
+    "eyebrow": "The people",
+    "title": "Our team",
+    "lead": "[Short introduction.]"
+  },
+  "testimonials": {
+    "eyebrow": "Kind words",
+    "title": "Testimonials",
+    "lead": ""
+  },
+  "contact": {
+    "eyebrow": "Get in touch",
+    "title": "Let’s talk",
+    "lead": "[Short invitation to enquire.]",
+    "directTitle": "Reach us directly",
+    "responseTime": "[e.g. within 24 hours]",
+    "formTitle": "Send an enquiry",
+    "formNote": "Our enquiry form is coming soon. Until then, please use the contact details."
+  },
+  "faq": {
+    "eyebrow": "Questions",
+    "title": "Frequently asked questions",
+    "lead": ""
+  },
+  "legal": {
+    "privacy": [],
+    "terms": []
+  }
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "quote": "[Client testimonial.]",
+    "names": "[Couple names]",
+    "event": "",
+    "featured": true
+  },
+  {
+    "quote": "[Client testimonial.]",
+    "names": "[Couple names]",
+    "event": "",
+    "featured": false
+  },
+  {
+    "quote": "[Client testimonial.]",
+    "names": "[Couple names]",
+    "event": "",
+    "featured": false
+  }
+]

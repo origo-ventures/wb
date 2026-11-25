@@ -30,7 +30,7 @@
     }
   });
 
-  if (!WB.fine) return;
+  if (!WB.fine || WB.off("cursor")) return;
 
   /* ---------- Custom cursor ---------- */
   var ring = document.createElement("div");

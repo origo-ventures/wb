@@ -1,0 +1,26 @@
+[
+  {
+    "title": "[Service one]",
+    "summary": "[Short description of this service.]",
+    "description": [
+      "[Detailed description.]"
+    ],
+    "image": "assets/images/placeholder-08.svg"
+  },
+  {
+    "title": "[Service two]",
+    "summary": "[Short description of this service.]",
+    "description": [
+      "[Detailed description.]"
+    ],
+    "image": "assets/images/placeholder-02.svg"
+  },
+  {
+    "title": "[Service three]",
+    "summary": "[Short description of this service.]",
+    "description": [
+      "[Detailed description.]"
+    ],
+    "image": "assets/images/placeholder-05.svg"
+  }
+]
