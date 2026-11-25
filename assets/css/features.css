@@ -1,0 +1,51 @@
+/* Feature components: wedding countdown, masonry gallery, filter chips, lightbox. */
+
+/* ---------- Countdown ---------- */
+.countdown { text-align: center; }
+.countdown__label { display: block; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-text-soft); margin: var(--space-3) 0 var(--space-1); }
+.countdown__input { font: inherit; font-size: 1.15rem; padding: 0.8rem 1.2rem; min-height: 52px; border: 1px solid var(--wb-rose); border-radius: var(--radius-pill); background: #fff; color: var(--wb-ink); text-align: center; }
+.countdown__sentence { font-family: var(--font-display); font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem); margin: var(--space-3) 0 var(--space-3); min-height: 2.4em; }
+.countdown__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-1); max-width: 34rem; margin-inline: auto; opacity: 0; transform: translateY(18px); transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); }
+.countdown__grid.is-on { opacity: 1; transform: none; }
+.countdown__cell { background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2) 0.25rem; }
+.countdown__num { display: block; font-family: var(--font-display); font-size: clamp(1.9rem, 1.2rem + 3.5vw, 3.4rem); line-height: 1; color: var(--wb-berry); font-variant-numeric: tabular-nums; }
+.countdown__unit { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-text-soft); }
+
+/* ---------- Filter chips ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-4); }
+.chip { font: inherit; font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase; min-height: 44px; padding: 0.5rem 1.2rem; border-radius: var(--radius-pill); border: 1px solid var(--color-border); background: transparent; color: var(--color-text); cursor: pointer; transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast); }
+.chip:hover { border-color: var(--wb-berry); }
+.chip[aria-pressed="true"] { background: var(--wb-berry); border-color: var(--wb-berry); color: var(--wb-ivory); }
+
+/* ---------- Masonry gallery ---------- */
+.masonry { column-count: 1; column-gap: var(--space-2); }
+@media (min-width: 560px) { .masonry { column-count: 2; } }
+@media (min-width: 960px) { .masonry { column-count: 3; } }
+.masonry__item { display: block; position: relative; overflow: hidden; margin-bottom: var(--space-2); break-inside: avoid; border-radius: var(--radius-sm); background: var(--wb-cream); cursor: zoom-in; }
+.masonry__item img { width: 100%; height: auto; transition: transform 1.1s var(--ease-out), filter 0.6s; }
+.masonry__item:hover img { transform: scale(1.06); }
+.masonry__item::after { content: attr(data-caption); position: absolute; inset: auto 0 0 0; padding: 2.5rem var(--space-2) var(--space-2); color: var(--wb-ivory); font-family: var(--font-display); font-size: 1.3rem; background: linear-gradient(transparent, rgba(42, 31, 36, 0.7)); opacity: 0; transform: translateY(12px); transition: opacity 0.4s, transform 0.4s var(--ease-out); }
+.masonry__item:hover::after, .masonry__item:focus-visible::after { opacity: 1; transform: none; }
+.masonry__item.is-in { animation: wb-pop 0.7s var(--ease-out) both; }
+@keyframes wb-pop { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+/* ---------- Lightbox ---------- */
+.lightbox { position: fixed; inset: 0; z-index: 600; display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; background: rgba(26, 18, 22, 0.94); opacity: 0; transition: opacity 0.25s ease; }
+.lightbox.is-open { opacity: 1; }
+.lightbox__figure { margin: 0; display: grid; justify-items: center; gap: var(--space-1); padding: var(--space-6) 0 var(--space-5); max-height: 100svh; min-width: 0; }
+.lightbox__img { max-width: 100%; max-height: calc(100svh - 11rem); width: auto; height: auto; border-radius: var(--radius-sm); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5); }
+.lightbox__img.is-swap { animation: wb-lb 0.5s var(--ease-out); }
+@keyframes wb-lb { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+.lightbox__caption { font-family: var(--font-display); font-size: 1.4rem; color: var(--wb-ivory); text-align: center; min-height: 1.6em; }
+.lightbox__count { position: absolute; left: 50%; bottom: var(--space-3); transform: translateX(-50%); margin: 0; font-size: 0.78rem; letter-spacing: 0.25em; color: rgba(251, 247, 242, 0.7); }
+.lightbox__close, .lightbox__nav { background: none; border: 0; color: var(--wb-ivory); cursor: pointer; font-size: 2.6rem; line-height: 1; width: 56px; height: 56px; border-radius: 50%; transition: background var(--dur-fast); }
+.lightbox__close:hover, .lightbox__nav:hover { background: rgba(251, 247, 242, 0.14); }
+.lightbox__close { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 2; }
+@media (max-width: 640px) { .lightbox { grid-template-columns: 44px 1fr 44px; } .lightbox__nav { width: 44px; font-size: 2rem; } }
+
+/* ---------- Image frames with parallax ---------- */
+.split__media { position: relative; overflow: hidden; }
+.parallax-wrap { position: absolute; left: 0; right: 0; top: -8%; height: 116%; }
+.parallax-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.card__media > img { width: 100%; height: 100%; object-fit: cover; }
+.section--dark.cta, .hero { position: relative; overflow: hidden; }
