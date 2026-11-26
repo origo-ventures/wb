@@ -1,0 +1,7 @@
+Safe update: only code files. Upload each file to the SAME folder in your repository (same name replaces the old file).
+These files do NOT contain any of your content, photos, logo or fonts.
+
+assets/css/components.css
+admin/panel.js
+admin/panel.css
+tools/build_site.py

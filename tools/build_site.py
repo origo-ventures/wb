@@ -580,12 +580,12 @@ def main():
     out = (ROOT / a.out).resolve()
     if out == ROOT or ROOT in out.parents and out.name in ("assets", "content", "tools", "admin"):
         sys.exit("Refusing to write into a source folder.")
-    shutil.rmtree(out, ignore_errors=True); out.mkdir(parents=True)
+    shutil.rmtree(out, ignore_errors=True); out.mkdir(parents=True, exist_ok=True)
     build_home(); build_about(); build_services(); build_portfolio(); build_team(); build_testimonials(); build_contact(); build_faq(); build_legal(); build_404()
     for fn, html_ in OUT_PAGES.items():
         (out / fn).write_text(html_, encoding="utf-8")
     for d in ("assets", "config", "admin"):
-        if (ROOT / d).exists(): shutil.copytree(ROOT / d, out / d)
+        if (ROOT / d).exists(): shutil.copytree(ROOT / d, out / d, dirs_exist_ok=True)
     (out / "assets" / "css" / "design.generated.css").write_text("/* Generated from content/design.json. Do not edit. */\n" + DESIGN_CSS, encoding="utf-8")
     urls = [f for f in OUT_PAGES if f != "404.html"]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "".join(f"  <url><loc>{DOMAIN}/{'' if f == 'index.html' else f}</loc></url>\n" for f in urls) + "</urlset>\n"
