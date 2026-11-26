@@ -12,7 +12,7 @@
   "cta": {
     "eyebrow": "Begin here",
     "title": "Let’s plan your day",
-    "text": "[Short invitation to get in touch.]",
+    "text": "Book a call and tell us what you're picturing — we'll take it from there.",
     "btn1": {
       "text": "Enquire now",
       "link": "contact.html"
@@ -36,7 +36,7 @@
     },
     "marquee": [
       {
-        "text": "Your story, our art"
+        "text": "Your day, Our obsession."
       },
       {
         "text": "Wedding Berries"
@@ -45,24 +45,24 @@
     "showStats": true,
     "stats": [
       {
-        "value": "250",
+        "value": "150",
         "suffix": "+",
-        "label": "[Stat label]"
+        "label": "Events Organized"
       },
       {
-        "value": "12",
-        "suffix": "",
-        "label": "[Stat label]"
-      },
-      {
-        "value": "1200",
+        "value": "3",
         "suffix": "+",
-        "label": "[Stat label]"
+        "label": "Countries"
       },
       {
-        "value": "8",
+        "value": "150",
+        "suffix": "+",
+        "label": "Weddings, Holud & Nikah ceremonies"
+      },
+      {
+        "value": "9",
         "suffix": " yrs",
-        "label": "[Stat label]"
+        "label": ""
       }
     ],
     "showServices": true,
@@ -71,11 +71,11 @@
     "servicesLead": "[One sentence introducing the services.]",
     "showWork": true,
     "workEyebrow": "Selected work",
-    "workTitle": "[Portfolio headline]",
+    "workTitle": "Why you choose us!",
     "showAbout": true,
     "aboutEyebrow": "About us",
-    "aboutTitle": "[About headline]",
-    "aboutLead": "[Two or three sentences about Wedding Berries.]",
+    "aboutTitle": "How Wedding Berries started",
+    "aboutLead": "Wedding Berries was founded by Nazmus Shams and Afsana Rahman, who spent years being the friends everyone asked to help plan their weddings — the ones who ended up managing the caterer, the stage design and the seating chart, unofficially, at every family event.\n\nWhat started as favors turned into a proper studio. Today we run full-scale weddings, Holud evenings, Akth and Nikah ceremonies, birthday celebrations and destination weddings for clients across Dhaka, Cox's Bazar and beyond — including our first international event, a boat celebration in the Gulf of Thailand.\n\nWe keep our client roster deliberately small each season, so every event gets the same level of attention the first one did.\n\n— Shams & Afsana Rahman, Founders",
     "aboutImage": "assets/images/placeholder-05.svg",
     "showCountdown": true,
     "countdownEyebrow": "Your big day",
@@ -87,29 +87,43 @@
     "title": "Our story",
     "lead": "[Short introduction to Wedding Berries.]",
     "storyEyebrow": "Who we are",
-    "storyTitle": "[Story headline]",
+    "storyTitle": "How Wedding Berries started",
     "story": [
-      "[Founding story paragraph.]",
-      "[Second paragraph.]"
+      "Wedding Berries was founded by Nazmus Shams and Afsana Rahman, who spent years being the friends everyone asked to help plan their weddings — the ones who ended up managing the caterer, the stage design and the seating chart, unofficially, at every family event.",
+      "What started as favours turned into a proper studio. Today we run full-scale weddings, Holud evenings, Akth and Nikah ceremonies, birthday celebrations and destination weddings for clients across Dhaka, Cox's Bazar and beyond — including our first international event, a boat celebration in the Gulf of Thailand.",
+      "We keep our client roster deliberately small each season, so every event gets the same level of attention the first one did.",
+      "— Shams & Afsana Rahman, Founders"
     ],
-    "image": "assets/images/placeholder-06.svg",
-    "principlesEyebrow": "What we stand for",
+    "image": "assets/images/uploads/pages/our-story__pmwx5nd9pcb5.png",
+    "principlesEyebrow": "What makes us different",
     "principlesTitle": "Our principles",
     "principles": [
       {
-        "title": "[Principle one]",
-        "text": "[Explanation.]"
+        "title": "One planner, start to finish",
+        "text": "You get a single lead planner for the entire process — not a rotating cast handed off between departments."
       },
       {
-        "title": "[Principle two]",
-        "text": "[Explanation.]"
+        "title": "Ceremony-literate planning",
+        "text": "We know the order of a Gaye Holud, the flow of a Nikah and where a borrowed Western format doesn't quite fit — and plan accordingly."
       },
       {
-        "title": "[Principle three]",
-        "text": "[Explanation.]"
+        "title": "A vendor network built over years",
+        "text": "Florists, caterers, photographers and venues across Dhaka and Cox's Bazar that we've worked with — and trust — repeatedly."
+      },
+      {
+        "title": "Transparent, itemised budgets",
+        "text": "You see exactly what each vendor and service costs. No bundled mark-ups hidden inside a single \"décor\" line item."
+      },
+      {
+        "title": "Comfortable with international guests",
+        "text": "We regularly coordinate travel, permits and logistics for guests flying in from abroad — including our own destination events overseas."
+      },
+      {
+        "title": "A deliberately small roster",
+        "text": "We take on a limited number of events each season, so no wedding is squeezed between two others in the same weekend."
       }
     ],
-    "showTimeline": true,
+    "showTimeline": false,
     "timelineEyebrow": "Our journey",
     "timelineTitle": "Moments that shaped us",
     "timeline": [
@@ -138,21 +152,33 @@
   "services": {
     "eyebrow": "What we do",
     "title": "Our services",
-    "lead": "[Short introduction.]",
+    "lead": "Event management for every kind of celebration.\nFull wedding planning, single-ceremony coordination, or day-of management — scoped around what your event actually needs.",
     "processEyebrow": "How we work",
     "processTitle": "Our process",
     "process": [
       {
-        "title": "[Step one]",
-        "text": "[Description.]"
+        "title": "Wedding & Reception Design",
+        "text": "End-to-end wedding and reception planning — venue, stage design, catering, photography and a full day-of timeline, all managed by one lead planner."
       },
       {
-        "title": "[Step two]",
-        "text": "[Description.]"
+        "title": "Holud (Gaye Holud)",
+        "text": "The turmeric ceremony, planned with the color, florals and staging it deserves — coordinated outfits, seating design and a run of show that keeps both families comfortable."
       },
       {
-        "title": "[Step three]",
-        "text": "[Description.]"
+        "title": "Akth & Nikah Ceremonies",
+        "text": "Nikah and Akth planning built around the ceremony's actual order — seating for both families, catering coordination, and a pace that never feels rushed."
+      },
+      {
+        "title": "Destination Weddings",
+        "text": "Beach ceremonies in Cox's Bazar and destinations further afield, with travel, permits and on-the-ground vendor logistics managed from Dhaka to arrival."
+      },
+      {
+        "title": "Birthday Celebrations",
+        "text": "Birthday celebrations from a child's first party to a golden anniversary — themed styling, entertainment booking and full-day coordination."
+      },
+      {
+        "title": "Full Event Management",
+        "text": "Engagements, bridal showers, anniversaries and corporate socials — for any celebration that needs one calm, capable team running the details."
       }
     ]
   },
@@ -175,11 +201,11 @@
   "contact": {
     "eyebrow": "Get in touch",
     "title": "Let’s talk",
-    "lead": "[Short invitation to enquire.]",
+    "lead": "Ready to start planning?",
     "directTitle": "Reach us directly",
     "responseTime": "[e.g. within 24 hours]",
     "formTitle": "Send an enquiry",
-    "formNote": "Our enquiry form is coming soon. Until then, please use the contact details."
+    "formNote": "Book a call and tell us what you're picturing — we'll take it from there."
   },
   "faq": {
     "eyebrow": "Questions",
