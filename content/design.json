@@ -9,13 +9,13 @@
   "fonts": {
     "display": {
       "source": "google",
-      "google": "Cormorant Garamond",
+      "google": "Abril Fatface",
       "custom": "",
       "customKind": "serif"
     },
     "body": {
       "source": "google",
-      "google": "Jost",
+      "google": "Spectral",
       "custom": "",
       "customKind": "sans"
     },
