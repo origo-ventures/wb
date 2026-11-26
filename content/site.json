@@ -9,18 +9,18 @@
     "favicon": "assets/images/uploads/brand/wedding-berries__pmwx2luige8p.png"
   },
   "contact": {
-    "email": "[email address]",
-    "phone": "[phone number]",
-    "address": "[studio address]",
-    "mapQuery": "",
-    "mapLink": "",
-    "showWhatsapp": false,
-    "whatsapp": "",
+    "email": "weddingberriesevents@gmail.com",
+    "phone": "+8801719-221497",
+    "address": "Rangs Waterfront. Dhaka-1212",
+    "mapQuery": "https://share.google/HjAMpzcPkAmYOYiFe",
+    "mapLink": "https://share.google/HjAMpzcPkAmYOYiFe",
+    "showWhatsapp": true,
+    "whatsapp": "+8801719-221497",
     "whatsappText": "Hello Wedding Berries, I would like to know more."
   },
   "social": {
-    "facebook": "",
-    "instagram": "",
+    "facebook": "https://www.facebook.com/weddingberriesbd/",
+    "instagram": "https://www.instagram.com/weddingberries.bd/",
     "youtube": "",
     "tiktok": "",
     "pinterest": ""
