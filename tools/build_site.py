@@ -114,6 +114,7 @@ FONT_RE = re.compile(r"^assets/fonts/[A-Za-z0-9_./-]+\.(woff2|woff|ttf|otf)$")
 FONT_FMT = {"woff2": "woff2", "woff": "woff", "ttf": "truetype", "otf": "opentype"}
 LEGACY_FONTS = {"classic": ("Cormorant Garamond", "Jost"), "romantic": ("Playfair Display", "Lato"), "modern": ("DM Serif Display", "Inter")}
 SCALES = {"small": 0.9, "normal": 1, "large": 1.15}
+PRELOAD_MS = {"short": 1700, "normal": 2700, "long": 3700}
 LOGO_H = {"small": 34, "medium": 46, "large": 60}
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 
@@ -201,7 +202,7 @@ def design_css():
     return faces + ":root{" + rules + "}\n", href, preloads
 
 # ---------------------------------------------------------------- shared layout
-HEAD_SCRIPT = """<script>(function(){var r=document.documentElement,m=false;try{m=matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}if(!m){r.classList.add("js-anim");if(r.hasAttribute("data-preload")){try{if(!sessionStorage.getItem("wb_seen")){r.classList.add("wb-preload");sessionStorage.setItem("wb_seen","1")}}catch(e){}}}setTimeout(function(){if(!window.WB||!window.WB.engineOn){r.classList.remove("js-anim","wb-preload")}},4500)})();</script>"""
+HEAD_SCRIPT = """<script>(function(){var r=document.documentElement,m=false;try{m=matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}if(!m){r.classList.add("js-anim");if(r.hasAttribute("data-preload")){try{if(!sessionStorage.getItem("wb_seen")){r.classList.add("wb-preload");sessionStorage.setItem("wb_seen","1")}}catch(e){}}}setTimeout(function(){if(!window.WB||!window.WB.engineOn){r.classList.remove("js-anim","wb-preload")}},6000)})();</script>"""
 
 def note(text):
     return f'<p class="placeholder-note"><strong>Note.</strong> {e(text)}</p>'
@@ -305,7 +306,7 @@ def page(file, title, desc, body, *, noindex=False, preload=False, features=(), 
     scripts = "".join(f'<script src="{prefix}assets/js/{n}.js" defer></script>\n' for n in core + [f"features/{f}" for f in features])
     ld = f'<script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>\n' if jsonld else ""
     preload = preload and FX.get("preloader") is not False
-    attrs = (" data-preload" if preload else "") + (f' data-fx="{FX_FLAGS}"' if FX_FLAGS else "")
+    attrs = ((f' data-preload data-preload-ms="{PRELOAD_MS.get(FX.get("preloaderLength"), 2700)}"') if preload else "") + (f' data-fx="{FX_FLAGS}"' if FX_FLAGS else "")
     return f'''<!DOCTYPE html>
 <html lang="en"{attrs}>
 <head>
