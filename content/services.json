@@ -1,6 +1,6 @@
 [
   {
-    "title": "[Service one]",
+    "title": "Platinum Event",
     "summary": "[Short description of this service.]",
     "description": [
       "[Detailed description.]"
@@ -8,7 +8,7 @@
     "image": "assets/images/placeholder-08.svg"
   },
   {
-    "title": "[Service two]",
+    "title": "Gold Event",
     "summary": "[Short description of this service.]",
     "description": [
       "[Detailed description.]"
@@ -16,7 +16,7 @@
     "image": "assets/images/placeholder-02.svg"
   },
   {
-    "title": "[Service three]",
+    "title": "Silver Event",
     "summary": "[Short description of this service.]",
     "description": [
       "[Detailed description.]"

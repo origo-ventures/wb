@@ -60,14 +60,14 @@
         "label": "Weddings, Holud & Nikah ceremonies"
       },
       {
-        "value": "9",
+        "value": "9+",
         "suffix": " yrs",
         "label": ""
       }
     ],
     "showServices": true,
     "servicesEyebrow": "What we do",
-    "servicesTitle": "[Services headline]",
+    "servicesTitle": "Platinum Events",
     "servicesLead": "[One sentence introducing the services.]",
     "showWork": true,
     "workEyebrow": "Selected work",
@@ -76,7 +76,7 @@
     "aboutEyebrow": "About us",
     "aboutTitle": "How Wedding Berries started",
     "aboutLead": "Wedding Berries was founded by Nazmus Shams and Afsana Rahman, who spent years being the friends everyone asked to help plan their weddings — the ones who ended up managing the caterer, the stage design and the seating chart, unofficially, at every family event.\n\nWhat started as favors turned into a proper studio. Today we run full-scale weddings, Holud evenings, Akth and Nikah ceremonies, birthday celebrations and destination weddings for clients across Dhaka, Cox's Bazar and beyond — including our first international event, a boat celebration in the Gulf of Thailand.\n\nWe keep our client roster deliberately small each season, so every event gets the same level of attention the first one did.\n\n— Shams & Afsana Rahman, Founders",
-    "aboutImage": "assets/images/placeholder-05.svg",
+    "aboutImage": "assets/images/uploads/pages/every-love-story-deserves-a-beautiful-be__pmwxacu4ytp5.jpg",
     "showCountdown": true,
     "countdownEyebrow": "Your big day",
     "countdownTitle": "How many days until “I do”?",
@@ -85,7 +85,7 @@
   "about": {
     "eyebrow": "About us",
     "title": "Our story",
-    "lead": "[Short introduction to Wedding Berries.]",
+    "lead": "We don't just plan events. We build the stage for the most important moments of your life \n— and treat every one with the same devotion, whether it's fifty guests or five hundred.",
     "storyEyebrow": "Who we are",
     "storyTitle": "How Wedding Berries started",
     "story": [
@@ -185,13 +185,13 @@
   "portfolio": {
     "eyebrow": "Selected work",
     "title": "Portfolio",
-    "lead": "[Short introduction.]",
+    "lead": "",
     "allLabel": "All"
   },
   "team": {
     "eyebrow": "The people",
     "title": "Our team",
-    "lead": "[Short introduction.]"
+    "lead": ""
   },
   "testimonials": {
     "eyebrow": "Kind words",
