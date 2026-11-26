@@ -94,16 +94,62 @@ def pg(name):
 SERVICE_SLUGS = unique_slugs(SERVICES, "title")
 PROJECT_SLUGS = unique_slugs(PROJECTS, "title")
 
-# ---------------------------------------------------------------- design tokens
-FONT_PRESETS = {
-    "classic": ("Cormorant Garamond", '"Cormorant Garamond", "Cormorant", Georgia, "Times New Roman", serif', "Jost", '"Jost", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                "family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500"),
-    "romantic": ("Playfair Display", '"Playfair Display", Georgia, "Times New Roman", serif', "Lato", '"Lato", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                 "family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Lato:wght@400;700"),
-    "modern": ("DM Serif Display", '"DM Serif Display", Georgia, "Times New Roman", serif', "Inter", '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-               "family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500"),
+# ---------------------------------------------------------------- fonts and design tokens
+def load_font_list():
+    p = ROOT / "admin" / "fonts.js"
+    if not p.exists():
+        return []
+    m = re.search(r"window\.WB_FONTS\s*=\s*(\[.*\])\s*;", p.read_text(encoding="utf-8"), re.S)
+    return json.loads(m.group(1)) if m else []
+
+FONT_BY_NAME = {f["n"]: f for f in load_font_list()}
+FALLBACK = {
+    "serif": 'Georgia, "Times New Roman", serif',
+    "sans": 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    "script": 'cursive, Georgia, serif',
+    "display": 'Georgia, "Times New Roman", serif',
+    "bangla": 'system-ui, "Noto Sans Bengali", sans-serif',
 }
+FONT_RE = re.compile(r"^assets/fonts/[A-Za-z0-9_./-]+\.(woff2|woff|ttf|otf)$")
+FONT_FMT = {"woff2": "woff2", "woff": "woff", "ttf": "truetype", "otf": "opentype"}
+LEGACY_FONTS = {"classic": ("Cormorant Garamond", "Jost"), "romantic": ("Playfair Display", "Lato"), "modern": ("DM Serif Display", "Inter")}
+SCALES = {"small": 0.9, "normal": 1, "large": 1.15}
+LOGO_H = {"small": 34, "medium": 46, "large": 60}
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+def font_config():
+    f = DESIGN.get("fonts")
+    if isinstance(f, str):
+        d, b = LEGACY_FONTS.get(f, LEGACY_FONTS["classic"])
+        f = {"display": {"source": "google", "google": d}, "body": {"source": "google", "google": b}}
+    return f if isinstance(f, dict) else {}
+
+def pick_weight(avail, prefs):
+    for w in prefs:
+        if w in avail:
+            return w
+    return avail[0] if avail else prefs[0]
+
+def resolve_font(cfg, role, default):
+    cfg = cfg if isinstance(cfg, dict) else {}
+    custom = cfg.get("custom") or ""
+    if cfg.get("source") == "custom" and FONT_RE.match(custom) and ".." not in custom:
+        kind = cfg.get("customKind") if cfg.get("customKind") in FALLBACK else ("serif" if role == "display" else "sans")
+        fam = f"WB {role.title()} Custom"
+        return dict(kind="custom", family=fam, stack=f'"{fam}", {FALLBACK[kind]}', path=custom, w_head="500", w_brand="600")
+    name = cfg.get("google") if cfg.get("google") in FONT_BY_NAME else default
+    ent = FONT_BY_NAME.get(name) or {"n": name, "c": "serif", "w": "400"}
+    ws = ent["w"].split(";")
+    return dict(kind="google", family=name, stack=f'"{name}", {FALLBACK.get(ent["c"], FALLBACK["serif"])}', ent=ent,
+                w_head=pick_weight(ws, ["500", "400", "600", "700"]), w_brand=pick_weight(ws, ["600", "700", "500", "400"]))
+
+def google_spec(ent):
+    name = ent["n"].replace(" ", "+"); ws = ent["w"].split(";")
+    if ws == ["400"]:
+        return f"family={name}" + (":ital@0;1" if ent.get("i") else "")
+    if ent.get("i") and "400" in ws:
+        return f"family={name}:ital,wght@" + ";".join([f"0,{w}" for w in ws] + ["1,400"])
+    return f"family={name}:wght@" + ";".join(ws)
 
 def hex2rgb(h): h = h.lstrip("#"); return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 def rgb2hex(c): return "#%02X%02X%02X" % tuple(max(0, min(255, round(x))) for x in c)
@@ -120,31 +166,83 @@ def contrast(a, b):
     return (la + 0.05) / (lb + 0.05)
 
 def design_css():
+    """Returns (css, google_stylesheet_href or None, [font preload paths])."""
     col = dict(berry="#7A1F3D", rose="#B76E79", gold="#C9A27A", ivory="#FBF7F2", ink="#2A1F24")
     for k, v in (DESIGN.get("colors") or {}).items():
         if k in col and isinstance(v, str) and HEX.match(v):
             col[k] = v.upper()
-    fam = FONT_PRESETS.get(DESIGN.get("fonts"), FONT_PRESETS["classic"])
     if contrast(col["berry"], col["ivory"]) < 4.5:
         print(f"WARNING: brand colour on background contrast is {contrast(col['berry'], col['ivory']):.1f}:1 (below 4.5:1); buttons and links may be hard to read.")
-    css = ":root{" + ";".join([
+    fc = font_config()
+    disp = resolve_font(fc.get("display"), "display", "Cormorant Garamond")
+    body = resolve_font(fc.get("body"), "body", "Jost")
+    faces, specs, preloads = "", [], []
+    for f in (disp, body):
+        if f["kind"] == "google":
+            sp = google_spec(f["ent"])
+            if sp not in specs:
+                specs.append(sp)
+        elif f["path"] not in preloads:
+            ext = f["path"].rsplit(".", 1)[1]
+            faces += (f'@font-face{{font-family:"{f["family"]}";src:url("../{f["path"][len("assets/"):]}") format("{FONT_FMT[ext]}");'
+                      f'font-weight:100 900;font-style:normal;font-display:swap}}\n')
+            if ext == "woff2":
+                preloads.append(f["path"])
+    href = ("https://fonts.googleapis.com/css2?" + "&".join(specs) + "&display=swap") if specs else None
+    scale = SCALES.get(fc.get("scale"), 1)
+    logo_h = LOGO_H.get((SITE.get("brand") or {}).get("logoHeight"), 46)
+    rules = ";".join([
         f"--wb-ivory:{col['ivory']}", f"--wb-cream:{mix(col['ivory'], col['gold'], 0.16)}", f"--wb-line:{mix(col['ivory'], col['ink'], 0.12)}",
         f"--wb-ink:{col['ink']}", f"--wb-muted:{mix(col['ink'], col['ivory'], 0.38)}",
         f"--wb-berry:{col['berry']}", f"--wb-berry-deep:{darken(col['berry'], 0.74)}", f"--wb-rose:{col['rose']}", f"--wb-rose-text:{darken(col['rose'], 0.77)}", f"--wb-gold:{col['gold']}",
-        f"--font-display:{fam[1]}", f"--font-body:{fam[3]}",
-    ]) + "}\n"
-    return css, fam[4]
+        f"--font-display:{disp['stack']}", f"--font-body:{body['stack']}",
+        f"--w-head:{disp['w_head']}", f"--w-brand:{disp['w_brand']}", f"--h-scale:{scale}", f"--logo-h:{logo_h}px",
+    ])
+    return faces + ":root{" + rules + "}\n", href, preloads
 
 # ---------------------------------------------------------------- shared layout
 HEAD_SCRIPT = """<script>(function(){var r=document.documentElement,m=false;try{m=matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}if(!m){r.classList.add("js-anim");if(r.hasAttribute("data-preload")){try{if(!sessionStorage.getItem("wb_seen")){r.classList.add("wb-preload");sessionStorage.setItem("wb_seen","1")}}catch(e){}}}setTimeout(function(){if(!window.WB||!window.WB.engineOn){r.classList.remove("js-anim","wb-preload")}},4500)})();</script>"""
 
-PRELOADER = """<div class="preloader" aria-hidden="true">
-  <svg class="preloader__mark" viewBox="0 0 120 120"><circle class="preloader__ring" cx="60" cy="60" r="50"/><text class="preloader__text" x="60" y="73" text-anchor="middle">wb</text></svg>
-  <span class="preloader__name">%s</span>
-</div>"""
-
 def note(text):
     return f'<p class="placeholder-note"><strong>Note.</strong> {e(text)}</p>'
+
+
+def favicon(prefix):
+    fav = (SITE.get("brand") or {}).get("favicon")
+    if img_ok(fav):
+        return f'<link rel="icon" href="{prefix}{e(fav)}">\n<link rel="apple-touch-icon" href="{prefix}{e(fav)}">\n'
+    return '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Ccircle cx=%2732%27 cy=%2732%27 r=%2729%27 fill=%27none%27 stroke=%27%23B76E79%27 stroke-width=%273%27/%3E%3Ctext x=%2732%27 y=%2741%27 font-size=%2726%27 text-anchor=%27middle%27 fill=%27%23B76E79%27 font-family=%27Georgia,serif%27%3Ewb%3C/text%3E%3C/svg%3E">\n'
+
+def font_links(prefix):
+    out = ""
+    if GOOGLE_HREF:
+        out += f'<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link rel="stylesheet" href="{GOOGLE_HREF}">\n'
+    for fp in FONT_PRELOADS:
+        out += f'<link rel="preload" href="{prefix}{e(fp)}" as="font" type="font/woff2" crossorigin>\n'
+    return out
+
+def brand_html(prefix, dark=False):
+    b = SITE.get("brand") or {}
+    logo, white = None, False
+    if dark and img_ok(b.get("logoDark")):
+        logo = b["logoDark"]
+    elif img_ok(b.get("logo")):
+        logo = b["logo"]; white = dark and b.get("footerWhite", True)
+    show_name = b.get("showName") or not logo
+    if logo:
+        mark = f'<img class="brand__logo{" brand__logo--white" if white else ""}" src="{prefix}{e(logo)}" alt="{"" if show_name else e(BRAND)}" height="{LOGO_H.get(b.get("logoHeight"), 46)}">'
+    else:
+        mark = '<span class="brand__mark" aria-hidden="true">wb</span>'
+    name = f'<span class="brand__name">{e(BRAND)}</span>' if show_name else ""
+    return mark + name
+
+def preloader_html():
+    b = SITE.get("brand") or {}
+    logo = b.get("logo") if img_ok(b.get("logo")) else None
+    inner = ('<img class="preloader__logo" src="' + e(logo) + '" alt="">') if logo else ""
+    text = "" if logo else '<text class="preloader__text" x="60" y="73" text-anchor="middle">wb</text>'
+    name = f'<span class="preloader__name">{e(BRAND)}</span>' if (b.get("showName") or not logo) else ""
+    return f'<div class="preloader" aria-hidden="true"><div class="preloader__stage"><svg class="preloader__mark" viewBox="0 0 120 120"><circle class="preloader__ring" cx="60" cy="60" r="50"/>{text}</svg>{inner}</div>{name}</div>'
 
 def nav_items():
     return [("about.html", NAV.get("about") or "About"), ("services.html", NAV.get("services") or "Services"),
@@ -156,7 +254,7 @@ def header(current, prefix):
     return f'''<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="container site-header__inner">
-    <a class="brand" href="{prefix}index.html" aria-label="{e(BRAND)}, home"><span class="brand__mark" aria-hidden="true">wb</span><span class="brand__name">{e(BRAND)}</span></a>
+    <a class="brand" href="{prefix}index.html" aria-label="{e(BRAND)}, home">{brand_html(prefix)}</a>
     <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav" aria-label="Open menu"><span class="nav-toggle__bars"></span></button>
     <nav class="nav" id="site-nav" data-nav aria-label="Main"><ul class="nav__list">{items}<li><a class="btn btn--sm" href="{prefix}contact.html"{cur} data-magnetic>{e(NAV.get("cta") or "Enquire")}</a></li></ul></nav>
   </div>
@@ -175,7 +273,7 @@ def footer(prefix):
     srow = f'<ul class="site-footer__links site-footer__social">{soc}</ul>' if soc else ""
     copy = (pg("footer").get("copyright") or f"{BRAND}. All rights reserved.")
     return f'''<footer class="site-footer"><div class="container">
-  <div class="site-footer__row"><a class="brand" href="{prefix}index.html"><span class="brand__mark" aria-hidden="true">wb</span><span class="brand__name">{e(BRAND)}</span></a><ul class="site-footer__links">{links}</ul></div>
+  <div class="site-footer__row"><a class="brand" href="{prefix}index.html">{brand_html(prefix, True)}</a><ul class="site-footer__links">{links}</ul></div>
   {crow}{srow}
   <p class="site-footer__copy">&copy; <span data-year>2026</span> {e(copy)}</p>
 </div></footer>'''
@@ -195,7 +293,7 @@ def analytics():
         return ""
     return f'<script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>\n<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments)}}gtag("js",new Date());gtag("config","{gid}");</script>\n'
 
-DESIGN_CSS, FONT_QUERY = design_css()
+DESIGN_CSS, GOOGLE_HREF, FONT_PRELOADS = design_css()
 FX_FLAGS = " ".join("no-" + k for k in ("petals", "cursor", "pageTransitions") if FX.get(k) is False).replace("pageTransitions", "transitions")
 
 def page(file, title, desc, body, *, noindex=False, preload=False, features=(), prefix="", jsonld=None):
@@ -223,12 +321,9 @@ def page(file, title, desc, body, *, noindex=False, preload=False, features=(), 
 <meta property="og:url" content="{url}">
 <meta name="theme-color" content="{DESIGN_COLORS['ivory']}">
 {HEAD_SCRIPT}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{FONT_QUERY}&display=swap">
-{css}{ld}{analytics()}</head>
+{favicon(prefix)}{font_links(prefix)}{css}{ld}{analytics()}</head>
 <body>
-{PRELOADER % e(BRAND) if preload else ""}
+{preloader_html() if preload else ""}
 {header(file, prefix)}
 <main id="main">
 {body}

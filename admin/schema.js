@@ -69,7 +69,14 @@
       fields: [T('q', 'Question'), TA('a', 'Answer', 4)] },
 
     /* ---------------- Site ---------------- */
-    { id: 'brand', group: 'Site', title: 'Brand', file: 'site.json', kind: 'object', sub: 'brand', intro: 'Name and tagline of the business.', fields: [T('name', 'Business name'), T('tagline', 'Tagline')] },
+    { id: 'brand', group: 'Site', title: 'Brand and logo', file: 'site.json', kind: 'object', sub: 'brand', dir: 'brand', intro: 'Business name, logo and website icon. The logo appears in the top menu, footer and the opening animation.',
+      fields: [T('name', 'Business name'), T('tagline', 'Tagline'), SEP('Logo'),
+        { key: 'logo', label: 'Logo (transparent PNG or SVG works best)', type: 'image', svg: true, alpha: true, max: 900 },
+        { key: 'logoDark', label: 'Logo for dark backgrounds (footer). Optional.', type: 'image', svg: true, alpha: true, max: 900 },
+        { key: 'logoHeight', label: 'Logo size in the menu', type: 'select', options: { small: 'Small', medium: 'Medium', large: 'Large' } },
+        { key: 'showName', label: 'Also show the business name next to the logo', type: 'bool' },
+        { key: 'footerWhite', label: 'If there is no dark-background logo, show the main logo in white in the footer', type: 'bool', def: true },
+        SEP('Browser tab icon'), { key: 'favicon', label: 'Website icon (a square picture; it is cropped to a square automatically)', type: 'image', icon: 256 }] },
     { id: 'contactinfo', group: 'Site', title: 'Contact info', file: 'site.json', kind: 'object', sub: 'contact',
       intro: 'Shown in the footer and on the Contact page. Leave a box empty to hide it.',
       fields: [T('email', 'Email'), T('phone', 'Phone'), T('address', 'Studio address'),
@@ -85,7 +92,11 @@
       fields: [SEP('Colours'),
         { key: 'colors', type: 'group', label: 'Brand colours', fields: [{ key: 'berry', label: 'Main brand colour (buttons, links)', type: 'color' }, { key: 'rose', label: 'Rose accent', type: 'color' }, { key: 'gold', label: 'Gold detail', type: 'color' }, { key: 'ivory', label: 'Page background', type: 'color' }, { key: 'ink', label: 'Text colour', type: 'color' }] },
         { type: 'contrast' },
-        SEP('Fonts'), { key: 'fonts', label: 'Font style', type: 'select', options: { classic: 'Classic: Cormorant Garamond + Jost', romantic: 'Romantic: Playfair Display + Lato', modern: 'Modern: DM Serif Display + Inter' } },
+        SEP('Fonts'), { type: 'fontpairs' },
+        { key: 'fonts', type: 'group', label: 'Your fonts', fields: [
+          { key: 'display', type: 'fontpick', role: 'display', label: 'Display font (big titles and headings)' },
+          { key: 'body', type: 'fontpick', role: 'body', label: 'Writing font (paragraphs, menu and buttons)' },
+          { key: 'scale', label: 'Heading size', type: 'select', options: { small: 'Smaller', normal: 'Normal', large: 'Larger (good for script fonts)' } }] },
         SEP('Effects'), { key: 'effects', type: 'group', label: 'Turn effects on or off', fields: [TOG('preloader', 'Opening animation (first visit)'), TOG('petals', 'Falling petals'), TOG('cursor', 'Soft cursor ring (desktop)'), TOG('pageTransitions', 'Page fade between pages'), TOG('marquee', 'Scrolling phrase strip')] }] }
   ];
 

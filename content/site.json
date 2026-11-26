@@ -1,7 +1,12 @@
 {
   "brand": {
     "name": "Wedding Berries",
-    "tagline": "Your story, our art"
+    "tagline": "Your story, our art",
+    "logo": "",
+    "logoDark": "",
+    "logoHeight": "medium",
+    "showName": false,
+    "favicon": ""
   },
   "contact": {
     "email": "[email address]",

@@ -27,7 +27,7 @@ assets/            CSS, JS, images
 
 ## Control Panel
 
-See `docs/control-panel.md`. Sections: Page text, Content (services, projects, team, testimonials, FAQ), Site (contact, social, tracking), Design (colours, fonts, effects), and tools (launch checklist, live preview, unused photos).
+See `docs/control-panel.md`. Sections: Page text, Content (services, projects, team, testimonials, FAQ), Site (brand and logo, contact, social, tracking), Design (colours, display and writing fonts from Google or your own upload, effects), and tools (launch checklist, live preview, unused photos).
 
 ## Security notes
 

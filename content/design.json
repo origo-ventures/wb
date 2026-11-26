@@ -6,7 +6,21 @@
     "ivory": "#FBF7F2",
     "ink": "#2A1F24"
   },
-  "fonts": "modern",
+  "fonts": {
+    "display": {
+      "source": "google",
+      "google": "Cormorant Garamond",
+      "custom": "",
+      "customKind": "serif"
+    },
+    "body": {
+      "source": "google",
+      "google": "Jost",
+      "custom": "",
+      "customKind": "sans"
+    },
+    "scale": "normal"
+  },
   "effects": {
     "preloader": true,
     "petals": true,

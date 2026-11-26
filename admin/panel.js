@@ -30,7 +30,10 @@
   function splitParas(s) { return String(s || '').replace(/\r/g, '').split(/\n\s*\n/).map(function (p) { return p.replace(/\s*\n\s*/g, ' ').trim(); }).filter(Boolean); }
   var IMG_RE = /^assets\/images\/[A-Za-z0-9_\/.-]+\.(jpg|jpeg|png|webp|svg)$/;
   function isImgPath(p) { return typeof p === 'string' && IMG_RE.test(p) && p.indexOf('..') < 0; }
-  function gather(v, out) { if (Array.isArray(v)) v.forEach(function (x) { gather(x, out); }); else if (v && typeof v === 'object') Object.keys(v).forEach(function (k) { gather(v[k], out); }); else if (isImgPath(v)) out[v] = true; return out; }
+  var FONT_RE = /^assets\/fonts\/[A-Za-z0-9_\/.-]+\.(woff2|woff|ttf|otf)$/;
+  function isFontPath(p) { return typeof p === 'string' && FONT_RE.test(p) && p.indexOf('..') < 0; }
+  function isAssetPath(p) { return isImgPath(p) || isFontPath(p); }
+  function gather(v, out) { if (Array.isArray(v)) v.forEach(function (x) { gather(x, out); }); else if (v && typeof v === 'object') Object.keys(v).forEach(function (k) { gather(v[k], out); }); else if (isAssetPath(v)) out[v] = true; return out; }
   function isPlaceholder(s) { s = String(s || '').trim(); return s.charAt(0) === '[' && s.charAt(s.length - 1) === ']'; }
   function countPlaceholders(v) { if (Array.isArray(v)) return v.reduce(function (n, x) { return n + countPlaceholders(x); }, 0); if (v && typeof v === 'object') return Object.keys(v).reduce(function (n, k) { return n + countPlaceholders(v[k]); }, 0); return typeof v === 'string' && isPlaceholder(v) ? 1 : 0; }
   function hexRGB(h) { h = h.replace('#', ''); return [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16); }); }
@@ -74,6 +77,14 @@
     blobCache[path] = pr; pr.catch(function () { delete blobCache[path]; });
     return pr;
   }
+  var bufCache = {};
+  function repoBuffer(path) {
+    if (bufCache[path]) return bufCache[path];
+    var pr = fetch(repoBase() + '/' + contentsPath(path), { headers: headers({ 'Accept': 'application/vnd.github.raw+json' }), cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('missing'); return r.arrayBuffer(); });
+    bufCache[path] = pr; pr.catch(function () { delete bufCache[path]; });
+    return pr;
+  }
   async function loadFile(name) {
     var path = 'content/' + name;
     if (S.files[path]) return S.files[path];
@@ -89,16 +100,40 @@
   async function loadAll() { var out = []; for (var i = 0; i < SCHEMA.FILES.length; i++) out.push(await loadFile(SCHEMA.FILES[i])); return out; }
 
   /* ------------------------------------------------------------ images */
-  function processImage(file) {
+  function svgSafe(text) {
+    if (!/<svg[\s>]/i.test(text)) return 'That file is not a valid SVG.';
+    if (/<script|<foreignObject|<iframe|<embed|<object|<!ENTITY|javascript:|\bon[a-z]+\s*=|@import|url\(\s*["']?https?:|href\s*=\s*["']?https?:/i.test(text)) return 'This SVG contains scripts or external links, so it was not accepted. Export a plain SVG, or use a PNG.';
+    return '';
+  }
+  function bufToB64(buf) { var bytes = new Uint8Array(buf), bin = '', CH = 0x8000; for (var i = 0; i < bytes.length; i += CH) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH)); return btoa(bin); }
+  function processImage(file, opts) {
+    opts = opts || {};
     return new Promise(function (res, rej) {
       if (file.size > 25 * 1024 * 1024) { rej(new Error('Photo is larger than 25 MB.')); return; }
+      if (opts.svg && (file.type === 'image/svg+xml' || /\.svg$/i.test(file.name))) {
+        if (file.size > 300 * 1024) { rej(new Error('SVG logo is larger than 300 KB. Please simplify it or use a PNG.')); return; }
+        var fr = new FileReader();
+        fr.onload = function () {
+          var bad = svgSafe(String(fr.result)); if (bad) { rej(new Error(bad)); return; }
+          var b64 = btoa(unescape(encodeURIComponent(String(fr.result))));
+          res({ b64: b64, dataUrl: 'data:image/svg+xml;base64,' + b64, ext: 'svg' });
+        };
+        fr.onerror = function () { rej(new Error('Could not read that file.')); };
+        fr.readAsText(file); return;
+      }
       var url = URL.createObjectURL(file), img = new Image();
       img.onload = function () {
-        var w = img.naturalWidth, h = img.naturalHeight, max = 1800, nw = w > max ? max : w, nh = Math.round(h * nw / w);
-        var c = document.createElement('canvas'); c.width = nw; c.height = nh;
-        var cx = c.getContext('2d'), png = file.type === 'image/png';
-        if (!png) { cx.fillStyle = '#fff'; cx.fillRect(0, 0, nw, nh); }
-        cx.drawImage(img, 0, 0, nw, nh);
+        var w = img.naturalWidth, h = img.naturalHeight, c = document.createElement('canvas'), cx = c.getContext('2d');
+        var png = file.type === 'image/png' || (!!opts.alpha && file.type === 'image/webp') || !!opts.icon;
+        if (opts.icon) {
+          var side = Math.min(w, h), size = Math.min(opts.icon, side);
+          c.width = size; c.height = size; cx.drawImage(img, (w - side) / 2, (h - side) / 2, side, side, 0, 0, size, size);
+        } else {
+          var max = opts.max || 1800, nw = w > max ? max : w, nh = Math.round(h * nw / w);
+          c.width = nw; c.height = nh;
+          if (!png) { cx.fillStyle = '#fff'; cx.fillRect(0, 0, nw, nh); }
+          cx.drawImage(img, 0, 0, nw, nh);
+        }
         var d = c.toDataURL(png ? 'image/png' : 'image/jpeg', 0.85);
         URL.revokeObjectURL(url);
         res({ b64: d.split(',')[1], dataUrl: d, ext: png ? 'png' : 'jpg' });
@@ -107,10 +142,21 @@
       img.src = url;
     });
   }
-  async function addUpload(file, dir, base) {
-    var r = await processImage(file);
+  async function addUpload(file, dir, base, opts) {
+    var r = await processImage(file, opts);
     var np = 'assets/images/uploads/' + (dir || 'misc') + '/' + slugify(base) + '__p' + stamp() + '.' + r.ext;
     S.pending[np] = r.b64; S.preview[np] = r.dataUrl;
+    return np;
+  }
+  /* custom fonts: the raw file is stored as is, after a header check */
+  async function addFontUpload(file) {
+    if (file.size > 4 * 1024 * 1024) throw new Error('Font file is larger than 4 MB.');
+    var buf = await file.arrayBuffer(), h = new Uint8Array(buf.slice(0, 4)), tag = String.fromCharCode.apply(null, h), ext = '';
+    if (tag === 'wOF2') ext = 'woff2'; else if (tag === 'wOFF') ext = 'woff'; else if (tag === 'OTTO') ext = 'otf';
+    else if ((h[0] === 0 && h[1] === 1 && h[2] === 0 && h[3] === 0) || tag === 'true') ext = 'ttf';
+    if (!ext) throw new Error('That does not look like a font file. Use WOFF2, WOFF, TTF or OTF.');
+    var np = 'assets/fonts/uploads/' + slugify(file.name.replace(/\.[^.]+$/, '')) + '__p' + stamp() + '.' + ext;
+    var b64 = bufToB64(buf); S.pending[np] = b64; bufCache[np] = Promise.resolve(buf);
     return np;
   }
   function showImg(path, imgEl, msgEl, token, seq, missingText) {
@@ -134,10 +180,36 @@
   function secById(id) { return SECTIONS.filter(function (s) { return s.id === id; })[0]; }
   function note(kind, text, noScroll) { var m = document.getElementById('flash'); if (!m) return; m.textContent = ''; if (text) m.appendChild(typeof text === 'string' ? el('div', { class: 'msg ' + kind, text: text }) : el('div', { class: 'msg ' + kind }, [text])); if (text && !noScroll) window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
+  /* ------------------------------------------------------------ fonts */
+  var FONTS = window.WB_FONTS || [];
+  var FB = { serif: 'Georgia, serif', sans: 'system-ui, sans-serif', script: 'cursive', display: 'Georgia, serif', bangla: 'system-ui, sans-serif' };
+  var CATS = [['all', 'All fonts'], ['serif', 'Serif (elegant)'], ['sans', 'Sans-serif (clean)'], ['script', 'Script (handwriting)'], ['display', 'Display (decorative)'], ['bangla', 'Bangla']];
+  function fontByName(n) { for (var i = 0; i < FONTS.length; i++) if (FONTS[i].n === n) return FONTS[i]; return null; }
+  function googleSpec(f) {
+    var name = f.n.replace(/ /g, '+'), ws = f.w.split(';');
+    if (ws.length === 1 && ws[0] === '400') return 'family=' + name + (f.i ? ':ital@0;1' : '');
+    if (f.i && ws.indexOf('400') > -1) return 'family=' + name + ':ital,wght@' + ws.map(function (w) { return '0,' + w; }).concat(['1,400']).join(';');
+    return 'family=' + name + ':wght@' + ws.join(';');
+  }
+  var gLoaded = {}, cLoaded = {}, cCount = 0;
+  function ensureGoogle(f) { if (gLoaded[f.n]) return; gLoaded[f.n] = 1; document.head.appendChild(el('link', { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?' + googleSpec(f) + '&display=swap' })); }
+  function previewCustom(box, path) {
+    if (cLoaded[path]) { box.style.fontFamily = '"' + cLoaded[path] + '"'; return Promise.resolve(); }
+    return repoBuffer(path).then(function (buf) {
+      var fam = 'wbprev' + (++cCount), ff = new FontFace(fam, buf.slice(0));
+      return ff.load().then(function (f) { document.fonts.add(f); cLoaded[path] = fam; box.style.fontFamily = '"' + fam + '"'; });
+    });
+  }
+  function migrateFonts(d) {
+    if (typeof d.fonts !== 'string') return;
+    var m = { classic: ['Cormorant Garamond', 'Jost'], romantic: ['Playfair Display', 'Lato'], modern: ['DM Serif Display', 'Inter'] }[d.fonts] || ['Cormorant Garamond', 'Jost'];
+    d.fonts = { display: { source: 'google', google: m[0], custom: '', customKind: 'serif' }, body: { source: 'google', google: m[1], custom: '', customKind: 'sans' }, scale: 'normal' };
+  }
+
   /* ------------------------------------------------------------ form fields */
   function label(fd) { return el('span', { class: 'l', text: fd.label }); }
   function hint(fd) { return fd.hint ? el('small', { text: fd.hint }) : null; }
-  var FULL = { textarea: 1, paras: 1, tags: 1, group: 1, list: 1, image: 1, images: 1, sep: 1, contrast: 1 };
+  var FULL = { textarea: 1, paras: 1, tags: 1, group: 1, list: 1, image: 1, images: 1, sep: 1, contrast: 1, fontpick: 1, fontpairs: 1 };
 
   function field(fd, obj, ctx) {
     var k = fd.key, t = fd.type, w = el('div', { class: 'fld' + (FULL[t] ? ' full' : '') }), inp;
@@ -186,6 +258,62 @@
         box.textContent = 'Brand colour on page background: ' + r.toFixed(1) + ':1. ' + (ok ? 'Readable.' : 'Too low for comfortable reading (aim for 4.5 or higher).');
       };
       (ctx.painters = ctx.painters || []).push(paint); paint();
+    } else if (t === 'fontpairs') {
+      var PAIRS = [['Classic', 'Cormorant Garamond', 'Jost', 'normal'], ['Romantic', 'Playfair Display', 'Lato', 'normal'], ['Modern', 'DM Serif Display', 'Inter', 'normal'], ['Bridal script', 'Great Vibes', 'Jost', 'large'], ['Bangla friendly', 'Noto Serif Bengali', 'Noto Sans Bengali', 'normal']];
+      var prow = el('div', { class: 'pairrow' });
+      PAIRS.forEach(function (pr) {
+        prow.appendChild(el('button', { type: 'button', class: 'tb', text: pr[0], onclick: function () {
+          ctx.root.fonts = { display: { source: 'google', google: pr[1], custom: '', customKind: 'serif' }, body: { source: 'google', google: pr[2], custom: '', customKind: 'sans' }, scale: pr[3] };
+          touch(ctx.file); renderSection(S.section, true);
+        } }));
+      });
+      w.appendChild(el('span', { class: 'l', text: 'Quick font pairs (you can still change each font below)' })); w.appendChild(prow);
+    } else if (t === 'fontpick') {
+      if (!obj[k] || typeof obj[k] !== 'object') obj[k] = { source: 'google', google: fd.role === 'display' ? 'Cormorant Garamond' : 'Jost', custom: '', customKind: fd.role === 'display' ? 'serif' : 'sans' };
+      var cfg = obj[k], fbox = el('div', { class: 'fontpick' }), cat = null;
+      var fset = function () { obj[k] = cfg; touch(ctx.file); if (ctx.onInput) ctx.onInput(); };
+      var drawF = function () {
+        fbox.textContent = '';
+        var isCustom = cfg.source === 'custom';
+        var prev = el('div', { class: 'fontprev' }, [el('div', { class: 'fp1' + (fd.role === 'display' ? ' big' : ''), text: fd.role === 'display' ? 'Every love story deserves a beautiful beginning' : 'We plan every detail so you can enjoy every moment of your day. 0123456789' }), el('div', { class: 'fp2', text: 'ABC abc  \u0986\u09AE\u09BE\u09B0 \u09B8\u09CB\u09A8\u09BE\u09B0 \u09AC\u09BE\u0982\u09B2\u09BE' })]);
+        var src = el('select', { 'aria-label': fd.label + ': source' }, [el('option', { value: 'google', text: 'Choose from Google Fonts' }), el('option', { value: 'custom', text: 'Upload my own font file' })]);
+        src.value = isCustom ? 'custom' : 'google';
+        src.addEventListener('change', function () { cfg.source = src.value; fset(); drawF(); });
+        fbox.appendChild(el('div', { class: 'fld' }, [el('span', { class: 'l', text: 'Where does the font come from?' }), src]));
+        if (!isCustom) {
+          var cur = fontByName(cfg.google) || fontByName(fd.role === 'display' ? 'Cormorant Garamond' : 'Jost');
+          if (cat === null) cat = cur ? cur.c : 'all';
+          var csel = el('select', { 'aria-label': 'Font category' }, CATS.map(function (c) { return el('option', { value: c[0], text: c[1] }); })); csel.value = cat;
+          var list = FONTS.filter(function (f) { return cat === 'all' || f.c === cat || (cur && f.n === cur.n); });
+          var fsel = el('select', { 'aria-label': 'Font' }, list.map(function (f) { return el('option', { value: f.n, text: f.n }); })); fsel.value = cur ? cur.n : '';
+          csel.addEventListener('change', function () { cat = csel.value; drawF(); });
+          fsel.addEventListener('change', function () { cfg.google = fsel.value; fset(); drawF(); });
+          fbox.appendChild(el('div', { class: 'row2' }, [el('div', { class: 'fld' }, [el('span', { class: 'l', text: 'Style of font' }), csel]), el('div', { class: 'fld' }, [el('span', { class: 'l', text: 'Font (' + list.length + ')' }), fsel])]));
+          if (cur) { ensureGoogle(cur); prev.style.fontFamily = '"' + cur.n + '", ' + FB[cur.c]; }
+          if (fd.role === 'body' && cur && (cur.c === 'script' || cur.c === 'display')) fbox.appendChild(el('small', { class: 'warnnote', text: 'Script and decorative fonts are hard to read in paragraphs. They look best as the display font.' }));
+          fbox.appendChild(prev);
+        } else {
+          var ff = el('input', { type: 'file', accept: '.woff2,.woff,.ttf,.otf,font/woff2,font/woff,font/ttf,font/otf' });
+          ff.addEventListener('change', async function () {
+            var f0 = ff.files && ff.files[0]; if (!f0) return;
+            try { cfg.custom = await addFontUpload(f0); cfg.source = 'custom'; fset(); drawF(); } catch (e) { alert(e.message); }
+            ff.value = '';
+          });
+          fbox.appendChild(el('div', { class: 'fld' }, [el('span', { class: 'l', text: 'Font file (WOFF2 is best; WOFF, TTF and OTF also work, max 4 MB)' }), ff,
+            el('small', { class: 'pvcap', text: cfg.custom ? (S.pending[cfg.custom] ? 'New font, not saved yet \u00b7 ' : 'Current font file \u00b7 ') + cfg.custom.split('/').pop() : 'No font uploaded yet. Until you upload one, the site uses a standard backup font.' })]));
+          var ksel = el('select', { 'aria-label': 'Font look' }, [el('option', { value: 'serif', text: 'Serif (with small feet)' }), el('option', { value: 'sans', text: 'Sans-serif (clean)' }), el('option', { value: 'script', text: 'Script (handwriting)' })]);
+          ksel.value = cfg.customKind || (fd.role === 'display' ? 'serif' : 'sans');
+          ksel.addEventListener('change', function () { cfg.customKind = ksel.value; fset(); });
+          fbox.appendChild(el('div', { class: 'fld' }, [el('span', { class: 'l', text: 'This font looks like (used as the backup while it loads)' }), ksel]));
+          if (cfg.custom) {
+            fbox.appendChild(prev);
+            previewCustom(prev, cfg.custom).catch(function () { prev.textContent = ''; prev.appendChild(el('small', { text: 'Preview not available. The file may be damaged or unsupported.' })); });
+            fbox.appendChild(el('div', {}, [el('button', { type: 'button', class: 'btn ghost small', text: 'Remove this font', onclick: function () { cfg.custom = ''; cfg.source = 'google'; fset(); drawF(); } })]));
+          }
+          fbox.appendChild(el('small', { text: 'Only upload fonts you are licensed to use on a website. Bangla and other scripts work if the font includes them.' }));
+        }
+      };
+      w.appendChild(label(fd)); w.appendChild(fbox); drawF();
     } else if (t === 'group') {
       if (!obj[k] || typeof obj[k] !== 'object') obj[k] = {};
       var g = el('div', { class: 'group' }); w.appendChild(label(fd));
@@ -194,10 +322,10 @@
       g.appendChild(pr); w.appendChild(g);
     } else if (t === 'image') {
       w.appendChild(label(fd));
-      var pv = el('img', { class: 'pv', alt: '', title: 'Click to open full size' }), msg = el('span', { class: 'pvmsg', text: 'Loading…' });
+      var contain = !!(fd.alpha || fd.svg || fd.icon), pv = el('img', { class: 'pv' + (contain ? ' contain' : ''), alt: '', title: 'Click to open full size' }), msg = el('span', { class: 'pvmsg', text: 'Loading…' });
       var cap = el('small', { class: 'pvcap' }), seq = 0;
-      var file = el('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp' });
-      var rm = el('button', { type: 'button', class: 'btn ghost small', text: 'Remove photo' });
+      var file = el('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp' + (fd.svg ? ',image/svg+xml,.svg' : '') });
+      var rm = el('button', { type: 'button', class: 'btn ghost small', text: 'Remove' });
       var paintImg = function () {
         var p = obj[k] || '', token = ++seq;
         pv.hidden = true; msg.hidden = false; rm.hidden = !p;
@@ -209,11 +337,11 @@
       pv.addEventListener('click', function () { if (pv.src) window.open(pv.src, '_blank', 'noopener'); });
       file.addEventListener('change', async function () {
         var f0 = file.files && file.files[0]; if (!f0) return;
-        try { var np = await addUpload(f0, ctx.dir, (ctx.tk && obj[ctx.tk]) || obj.title || obj.name || fd.key); set(np); paintImg(); } catch (e) { alert(e.message); }
+        try { var np = await addUpload(f0, ctx.dir, (ctx.tk && obj[ctx.tk]) || obj.title || obj.name || fd.key, { svg: fd.svg, alpha: fd.alpha, icon: fd.icon, max: fd.max }); set(np); paintImg(); } catch (e) { alert(e.message); }
         file.value = '';
       });
       rm.addEventListener('click', function () { set(''); paintImg(); });
-      w.appendChild(el('div', { class: 'imgbox' }, [el('div', { class: 'pvframe' }, [pv, msg]), el('div', { class: 'imgctl' }, [cap, file, rm, el('small', { text: 'JPG, PNG or WebP. Big photos are resized automatically.' })])]));
+      w.appendChild(el('div', { class: 'imgbox' }, [el('div', { class: 'pvframe' + (contain ? ' light' : '') }, [pv, msg]), el('div', { class: 'imgctl' }, [cap, file, rm, el('small', { text: fd.hint || (fd.svg ? 'SVG, PNG, JPG or WebP. Big images are resized automatically.' : 'JPG, PNG or WebP. Big photos are resized automatically.') })])]));
       paintImg();
     } else if (t === 'images') {
       if (!Array.isArray(obj[k])) obj[k] = [];
@@ -356,19 +484,19 @@
 
   /* ------------------------------------------------------------ tools */
   async function renderUnused(view) {
-    view.appendChild(el('h1', { text: 'Unused photos' }));
-    view.appendChild(el('p', { class: 'muted', text: 'Photos uploaded through this panel that no page uses any more. Deleting them keeps the repository small.' }));
+    view.appendChild(el('h1', { text: 'Unused files' }));
+    view.appendChild(el('p', { class: 'muted', text: 'Photos and fonts uploaded through this panel that nothing uses any more. Deleting them keeps the repository small.' }));
     var ref = await gh('GET', 'git/ref/heads/' + refPath()), cm = await gh('GET', 'git/commits/' + ref.object.sha);
     var tree = await gh('GET', 'git/trees/' + cm.tree.sha + '?recursive=1');
     await loadAll();
     var refs = {}; Object.keys(S.files).forEach(function (p) { gather(S.files[p].data, refs); });
     Object.keys(S.pending).forEach(function (p) { refs[p] = true; });
-    var unused = (tree.tree || []).filter(function (t) { return t.type === 'blob' && /^assets\/images\/uploads\//.test(t.path) && isImgPath(t.path) && !refs[t.path]; });
-    if (!unused.length) { view.appendChild(el('div', { class: 'msg ok', text: 'No unused photos. Everything uploaded is in use.' })); return; }
+    var unused = (tree.tree || []).filter(function (t) { return t.type === 'blob' && /^assets\/(images|fonts)\/uploads\//.test(t.path) && isAssetPath(t.path) && !refs[t.path]; });
+    if (!unused.length) { view.appendChild(el('div', { class: 'msg ok', text: 'No unused files. Every uploaded photo and font is in use.' })); return; }
     var checks = [], list = el('div');
     unused.forEach(function (f) {
-      var cb = el('input', { type: 'checkbox' }), im = el('img', { class: 'upv', alt: '' }); checks.push([cb, f]);
-      repoImage(f.path).then(function (u) { im.src = u; }).catch(function () { /* ignore */ });
+      var isF = isFontPath(f.path), cb = el('input', { type: 'checkbox' }), im = isF ? el('span', { class: 'upv fontbox', text: 'Aa' }) : el('img', { class: 'upv', alt: '' }); checks.push([cb, f]);
+      if (!isF) repoImage(f.path).then(function (u) { im.src = u; }).catch(function () { /* ignore */ });
       list.appendChild(el('label', { class: 'urow' }, [cb, im, el('span', { class: 'uinfo' }, [el('b', { text: f.path.split('/').pop() }), el('small', { text: f.path + (f.size ? ' \u00b7 ' + Math.round(f.size / 1024) + ' KB' : '') })])]));
     });
     var all = el('button', { type: 'button', class: 'btn ghost small', text: 'Select all', onclick: function () { checks.forEach(function (c) { c[0].checked = true; }); } });
@@ -432,7 +560,7 @@
       SECTIONS.filter(function (s) { return s.group === g; }).forEach(function (s) { nav.appendChild(el('button', { class: 'pill' + (S.section === s.id ? ' on' : ''), text: s.title, onclick: function () { go(s.id); } })); });
     });
     nav.appendChild(el('span', { class: 'sep', text: 'Tools' }));
-    [['checklist', 'Launch checklist'], ['preview', 'Live preview'], ['unused', 'Unused photos']].forEach(function (t) { nav.appendChild(el('button', { class: 'pill' + (S.section === t[0] ? ' on' : ''), text: t[1], onclick: function () { go(t[0]); } })); });
+    [['checklist', 'Launch checklist'], ['preview', 'Live preview'], ['unused', 'Unused files']].forEach(function (t) { nav.appendChild(el('button', { class: 'pill' + (S.section === t[0] ? ' on' : ''), text: t[1], onclick: function () { go(t[0]); } })); });
     var top = el('div', { class: 'top' }, [
       el('div', { class: 'toprow' }, [
         el('div', { class: 'brand' }, ['Wedding ', el('span', { text: 'Berries Control' })]),
@@ -462,7 +590,7 @@
         });
         view.appendChild(el('div', { class: 'gtitle', text: 'Tools' }));
         var tools = el('div', { class: 'cards' });
-        [['checklist', 'Launch checklist', 'See which placeholder texts and settings still need real content.'], ['preview', 'Live preview', 'Look at the published website on desktop and phone size.'], ['unused', 'Unused photos', 'Find uploaded photos nothing uses any more and delete them.']].forEach(function (t) { tools.appendChild(el('button', { class: 'card', onclick: function () { go(t[0]); } }, [el('b', { text: t[1] }), el('span', { text: t[2] })])); });
+        [['checklist', 'Launch checklist', 'See which placeholder texts and settings still need real content.'], ['preview', 'Live preview', 'Look at the published website on desktop and phone size.'], ['unused', 'Unused files', 'Find uploaded photos and fonts nothing uses any more and delete them.']].forEach(function (t) { tools.appendChild(el('button', { class: 'card', onclick: function () { go(t[0]); } }, [el('b', { text: t[1] }), el('span', { text: t[2] })])); });
         view.appendChild(tools);
         view.appendChild(el('div', { class: 'box', style: 'margin-top:18px' }, [el('b', { text: 'Tips' }), el('p', { class: 'muted', style: 'margin:6px 0 0', text: 'A blank line in a long text starts a new paragraph. Photos are resized automatically before upload. Every save is one GitHub commit, so older versions can always be restored from the repository history.' })]));
         refreshBar(); return;
@@ -485,6 +613,7 @@
         view.appendChild(listEditor(f.data, sec, ctx, false));
       } else {
         var target = sec.kind === 'root' ? f.data : (f.data[sec.sub] && typeof f.data[sec.sub] === 'object' ? f.data[sec.sub] : (f.data[sec.sub] = {}));
+        if (sec.id === 'design') migrateFonts(target);
         ctx.root = target;
         var rb = el('div', { class: 'rbody' });
         sec.fields.forEach(function (fd) { rb.appendChild(field(fd, target, ctx)); });
