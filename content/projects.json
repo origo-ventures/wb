@@ -1,37 +1,41 @@
 [
   {
-    "title": "The Rahman Reception",
+    "title": "Wedding Reception",
     "venue": "Dhaka",
     "date": "",
     "category": "Wedding",
     "featured": true,
-    "cover": "assets/images/placeholder-01.svg",
+    "cover": "assets/images/uploads/projects/wedding-reception__pmwxeekgcwri.jpg",
     "images": [
-      "assets/images/placeholder-01.svg",
-      "assets/images/placeholder-02.svg",
-      "assets/images/placeholder-04.svg",
-      "assets/images/placeholder-05.svg"
+      "assets/images/uploads/projects/the-rahman-reception__pmwxea2wcd8r.jpg",
+      "assets/images/uploads/projects/the-rahman-reception__pmwxeb0n7knd.jpg",
+      "assets/images/uploads/projects/the-rahman-reception__pmwxeb52tr4i.jpg",
+      "assets/images/uploads/projects/the-rahman-reception__pmwxebumt4fb.jpg",
+      "assets/images/uploads/projects/the-rahman-reception__pmwxec96dyuk.jpg",
+      "assets/images/uploads/projects/wedding-reception__pmwxedbvdoe4.jpg",
+      "assets/images/uploads/projects/wedding-reception__pmwxedlcpozb.jpg"
     ],
-    "story": [
-      "A 400-guest reception with a live stage build, florals and full lighting design."
-    ]
+    "story": []
   },
   {
-    "title": "A Golden Gaye Holud",
+    "title": "Gaye Holud",
     "venue": "Dhaka",
     "date": "",
     "category": "Holud",
     "featured": true,
-    "cover": "assets/images/placeholder-04.svg",
+    "cover": "assets/images/uploads/projects/gaye-holud__pmwxef069n3p.jpg",
     "images": [
-      "assets/images/placeholder-04.svg",
-      "assets/images/placeholder-03.svg",
-      "assets/images/placeholder-06.svg",
-      "assets/images/placeholder-08.svg"
+      "assets/images/uploads/projects/gaye-holud__pmwxega0ld00.jpg",
+      "assets/images/uploads/projects/gaye-holud__pmwxega29ffn.jpg",
+      "assets/images/uploads/projects/gaye-holud__pmwxega406xm.jpg",
+      "assets/images/uploads/projects/gaye-holud__pmwxega5bz4f.jpg",
+      "assets/images/uploads/projects/gaye-holud__pmwxega6skyb.jpg",
+      "assets/images/uploads/projects/gaye-holud__pmwxega9fodq.jpg",
+      "assets/images/uploads/projects/gaye-holud__pmwxegab17ps.jpg",
+      "assets/images/uploads/projects/gaye-holud__pmwxegacasvi.jpg",
+      "assets/images/uploads/projects/gaye-holud__pmwxegad26ru.jpg"
     ],
-    "story": [
-      "Marigold and turmeric-toned staging for an intimate turmeric ceremony."
-    ]
+    "story": []
   },
   {
     "title": "An Intimate Nikah",
