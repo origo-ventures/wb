@@ -9,13 +9,13 @@
   "fonts": {
     "display": {
       "source": "google",
-      "google": "Great Vibes",
+      "google": "Abril Fatface",
       "custom": "",
       "customKind": "serif"
     },
     "body": {
       "source": "google",
-      "google": "Spectral",
+      "google": "Lora",
       "custom": "",
       "customKind": "sans"
     },
