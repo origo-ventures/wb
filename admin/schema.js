@@ -97,7 +97,7 @@
           { key: 'display', type: 'fontpick', role: 'display', label: 'Display font (big titles and headings)' },
           { key: 'body', type: 'fontpick', role: 'body', label: 'Writing font (paragraphs, menu and buttons)' },
           { key: 'scale', label: 'Heading size', type: 'select', options: { small: 'Smaller', normal: 'Normal', large: 'Larger (good for script fonts)' } }] },
-        SEP('Effects'), { key: 'effects', type: 'group', label: 'Turn effects on or off', fields: [TOG('preloader', 'Opening animation (first visit)'), TOG('petals', 'Falling petals'), TOG('cursor', 'Soft cursor ring (desktop)'), TOG('pageTransitions', 'Page fade between pages'), TOG('marquee', 'Scrolling phrase strip')] }] }
+        SEP('Effects'), { key: 'effects', type: 'group', label: 'Turn effects on or off', fields: [TOG('preloader', 'Opening animation (first visit)'), { key: 'preloaderLength', label: 'Opening animation length', type: 'select', def: 'normal', options: { short: 'Short (1.7 seconds)', normal: 'Normal (2.7 seconds)', long: 'Long (3.7 seconds)' } }, TOG('petals', 'Falling petals'), TOG('cursor', 'Soft cursor ring (desktop)'), TOG('pageTransitions', 'Page fade between pages'), TOG('marquee', 'Scrolling phrase strip')] }] }
   ];
 
   window.WB_SCHEMA = {

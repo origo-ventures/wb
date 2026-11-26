@@ -236,7 +236,7 @@
       w.appendChild(label(fd)); w.appendChild(inp);
     } else if (t === 'select') {
       inp = el('select', {}, Object.keys(fd.options).map(function (ov) { return el('option', { value: ov, text: fd.options[ov] }); }));
-      inp.value = obj[k] && fd.options[obj[k]] ? obj[k] : Object.keys(fd.options)[0];
+      inp.value = obj[k] && fd.options[obj[k]] ? obj[k] : (fd.def && fd.options[fd.def] ? fd.def : Object.keys(fd.options)[0]);
       inp.addEventListener('change', function () { set(inp.value); });
       w.appendChild(label(fd)); w.appendChild(inp);
     } else if (t === 'bool') {
