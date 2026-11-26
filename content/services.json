@@ -1,26 +1,20 @@
 [
   {
-    "title": "Platinum Event",
-    "summary": "[Short description of this service.]",
-    "description": [
-      "[Detailed description.]"
-    ],
+    "title": "Platinum Packages",
+    "summary": "",
+    "description": [],
     "image": "assets/images/placeholder-08.svg"
   },
   {
-    "title": "Gold Event",
-    "summary": "[Short description of this service.]",
-    "description": [
-      "[Detailed description.]"
-    ],
+    "title": "Gold Packages",
+    "summary": "",
+    "description": [],
     "image": "assets/images/placeholder-02.svg"
   },
   {
-    "title": "Silver Event",
-    "summary": "[Short description of this service.]",
-    "description": [
-      "[Detailed description.]"
-    ],
+    "title": "Silver Packages",
+    "summary": "",
+    "description": [],
     "image": "assets/images/placeholder-05.svg"
   }
 ]

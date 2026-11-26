@@ -7,7 +7,7 @@
     "cta": "Enquire"
   },
   "footer": {
-    "copyright": "Wedding Berries. All rights reserved. | Powered by ORIGO VENTURES"
+    "copyright": "Wedding Berries. All rights reserved | Powered by ORIGO VENTURES"
   },
   "cta": {
     "eyebrow": "Begin here",
@@ -45,30 +45,25 @@
     "showStats": true,
     "stats": [
       {
-        "value": "150",
+        "value": "600",
         "suffix": "+",
         "label": "Events Organized"
       },
       {
-        "value": "3",
+        "value": "2",
         "suffix": "+",
         "label": "Countries"
       },
       {
-        "value": "150",
-        "suffix": "+",
-        "label": "Weddings, Holud & Nikah ceremonies"
-      },
-      {
-        "value": "9+",
-        "suffix": " yrs",
-        "label": ""
+        "value": "10+",
+        "suffix": " years",
+        "label": "of journey"
       }
     ],
     "showServices": true,
     "servicesEyebrow": "What we do",
-    "servicesTitle": "Platinum Events",
-    "servicesLead": "[One sentence introducing the services.]",
+    "servicesTitle": "Event Packages",
+    "servicesLead": "",
     "showWork": true,
     "workEyebrow": "Selected work",
     "workTitle": "Why you choose us!",
@@ -183,7 +178,7 @@
     ]
   },
   "portfolio": {
-    "eyebrow": "Selected work",
+    "eyebrow": "Our Works",
     "title": "Portfolio",
     "lead": "",
     "allLabel": "All"
@@ -201,7 +196,7 @@
   "contact": {
     "eyebrow": "Get in touch",
     "title": "Let’s talk",
-    "lead": "Ready to start planning?",
+    "lead": "Ready to start planning?\nVisit our Studio.",
     "directTitle": "Reach us directly",
     "responseTime": "[e.g. within 24 hours]",
     "formTitle": "Send an enquiry",
