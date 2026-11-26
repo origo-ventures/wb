@@ -1,18 +1,26 @@
 [
   {
-    "q": "[Question 1]",
-    "a": "[Answer.]"
+    "q": "How far in advance should we book you?",
+    "a": "For a full wedding or destination event, 6–12 months gives us the best access to venues and vendors. For a single ceremony like a Holud or birthday, 6–10 weeks is usually enough — though earlier is always better in peak wedding season."
   },
   {
-    "q": "[Question 2]",
-    "a": "[Answer.]"
+    "q": "What's the difference between full planning and day-of coordination?",
+    "a": "Full planning covers everything from concept to execution. Day-of coordination is for clients who've already booked their own vendors and just want a calm, capable team running the actual event day."
   },
   {
-    "q": "[Question 3]",
-    "a": "[Answer.]"
+    "q": "Do you plan destination weddings outside Bangladesh?",
+    "a": "Yes. Alongside Cox's Bazar, we've planned an international event in Koh Phangan, Thailand, and are happy to discuss other destinations depending on scope and timeline."
   },
   {
-    "q": "[Question 4]",
-    "a": "[Answer.]"
+    "q": "Can you work within our family's religious and cultural traditions?",
+    "a": "That's a core part of what we do. From the order of a Nikah to the specifics of a Gaye Holud, we plan around the ceremony's actual traditions rather than a generic format."
+  },
+  {
+    "q": "Do we have to use your vendor list?",
+    "a": "No. We're happy to coordinate with vendors you've already chosen, and just as happy to recommend from our own network — whichever suits your budget and taste."
+  },
+  {
+    "q": "What are your payment terms?",
+    "a": "We work on a deposit to confirm your date, followed by staged payments tied to planning milestones. Exact terms are laid out clearly in your proposal before anything is signed."
   }
 ]

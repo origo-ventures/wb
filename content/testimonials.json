@@ -1,20 +1,20 @@
 [
   {
-    "quote": "[Client testimonial.]",
-    "names": "[Couple names]",
-    "event": "",
+    "quote": "\"Our Holud looked exactly like the mood board we dreamed up on a napkin. Wedding Berries handled every vendor call so our family could just enjoy the evening.\"",
+    "names": "— Nusrat H.",
+    "event": "Bou Bhat & Holud, Dhaka",
     "featured": true
   },
   {
-    "quote": "[Client testimonial.]",
-    "names": "[Couple names]",
-    "event": "",
+    "quote": "\"They ran our Nikah with real respect for how it's meant to flow — nothing rushed, nothing out of order. Our elders noticed, and said so.\"",
+    "names": "— Rafiq & Farzana",
+    "event": "Nikah & Reception, Dhaka",
     "featured": false
   },
   {
-    "quote": "[Client testimonial.]",
-    "names": "[Couple names]",
-    "event": "",
+    "quote": "\"We got married on the beach in Cox's Bazar with guests flying in from three countries. Every single logistic — transport, permits, the lot — was already sorted.\"",
+    "names": "— Tanvir S.",
+    "event": "Destination Wedding, Cox's Bazar",
     "featured": false
   }
 ]

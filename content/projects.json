@@ -1,9 +1,9 @@
 [
   {
-    "title": "[Couple names 1]",
-    "venue": "[Venue, city]",
+    "title": "The Rahman Reception",
+    "venue": "Dhaka",
     "date": "",
-    "category": "[Category A]",
+    "category": "Wedding",
     "featured": true,
     "cover": "assets/images/placeholder-01.svg",
     "images": [
@@ -13,14 +13,14 @@
       "assets/images/placeholder-05.svg"
     ],
     "story": [
-      "[Project story.]"
+      "A 400-guest reception with a live stage build, florals and full lighting design."
     ]
   },
   {
-    "title": "[Couple names 2]",
-    "venue": "[Venue, city]",
+    "title": "A Golden Gaye Holud",
+    "venue": "Dhaka",
     "date": "",
-    "category": "[Category B]",
+    "category": "Holud",
     "featured": true,
     "cover": "assets/images/placeholder-04.svg",
     "images": [
@@ -30,14 +30,14 @@
       "assets/images/placeholder-08.svg"
     ],
     "story": [
-      "[Project story.]"
+      "Marigold and turmeric-toned staging for an intimate turmeric ceremony."
     ]
   },
   {
-    "title": "[Couple names 3]",
-    "venue": "[Venue, city]",
+    "title": "An Intimate Nikah",
+    "venue": "Dhaka",
     "date": "",
-    "category": "[Category C]",
+    "category": "Akth & Nikah",
     "featured": true,
     "cover": "assets/images/placeholder-06.svg",
     "images": [
@@ -47,14 +47,14 @@
       "assets/images/placeholder-02.svg"
     ],
     "story": [
-      "[Project story.]"
+      "A close-family Nikah, planned around ritual order and quiet elegance."
     ]
   },
   {
-    "title": "[Couple names 4]",
-    "venue": "[Venue, city]",
+    "title": "Sunset Vows on the Beach",
+    "venue": "Cox's Bazar",
     "date": "",
-    "category": "[Category A]",
+    "category": "Destination",
     "featured": false,
     "cover": "assets/images/placeholder-09.svg",
     "images": [
@@ -63,14 +63,14 @@
       "assets/images/placeholder-05.svg"
     ],
     "story": [
-      "[Project story.]"
+      "Ceremonies on the world's longest natural sea beach — florals, seating, and the tide as your backdrop."
     ]
   },
   {
-    "title": "[Couple names 5]",
-    "venue": "[Venue, city]",
+    "title": "A Traditional Bengali Wedding",
+    "venue": "Dhaka",
     "date": "",
-    "category": "[Category B]",
+    "category": "Wedding",
     "featured": false,
     "cover": "assets/images/placeholder-03.svg",
     "images": [
@@ -79,15 +79,15 @@
       "assets/images/placeholder-07.svg"
     ],
     "story": [
-      "[Project story.]"
+      "Full ceremony production, from the stage build to the final send-off."
     ]
   },
   {
-    "title": "[Couple names 6]",
-    "venue": "[Venue, city]",
+    "title": "A Boat Celebration in Thailand",
+    "venue": "Koh Phangan, Thiland",
     "date": "",
-    "category": "[Category C]",
-    "featured": false,
+    "category": "International",
+    "featured": true,
     "cover": "assets/images/placeholder-07.svg",
     "images": [
       "assets/images/placeholder-07.svg",
@@ -95,7 +95,16 @@
       "assets/images/placeholder-06.svg"
     ],
     "story": [
-      "[Project story.]"
+      "Our first international event — a moonlit, LED-lit celebration in the Gulf of Thailand."
     ]
+  },
+  {
+    "images": [],
+    "title": "A Golden 50th",
+    "venue": "Dhaka",
+    "story": [
+      "A warm, gold-toned anniversary dinner for family spanning three generations."
+    ],
+    "category": "Birthday"
   }
 ]
