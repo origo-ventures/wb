@@ -466,7 +466,7 @@
       try {
         var j = await gh('GET', 'actions/runs?head_sha=' + encodeURIComponent(sha) + '&per_page=5');
         var run = (j.workflow_runs || [])[0];
-        if (!run) { if (tries > 6) { done('ok', 'Saved to GitHub. The website rebuilds automatically; changes appear in 1\u20133 minutes.'); return; } }
+        if (!run) { if (tries > 8) { done('err', 'Your changes are saved on GitHub, but NO website rebuild started, so the live site will not change. Open Tools > Setup check to see why (usually: the build file is missing or Pages is not set to GitHub Actions).'); return; } }
         else if (run.status === 'completed') {
           if (run.conclusion === 'success') done('ok', 'Saved and live: the website has been rebuilt with your changes.');
           else {
@@ -525,6 +525,72 @@
     stage.appendChild(frame); view.appendChild(stage);
   }
 
+  async function ghTry(path, rawUrl) {
+    try {
+      var r = await fetch(rawUrl || (repoBase() + '/' + path + (path.indexOf('?') < 0 ? '?' : '&') + '_=' + Date.now()), { headers: headers(), cache: 'no-store' });
+      var j = {}; try { j = await r.json(); } catch (e) { j = {}; }
+      return { ok: r.ok, status: r.status, json: j };
+    } catch (e) { return { ok: false, status: 0, json: {} }; }
+  }
+  async function renderHealth(view) {
+    view.appendChild(el('h1', { text: 'Setup check' }));
+    view.appendChild(el('p', { class: 'muted', text: 'Saved changes only appear on the website after GitHub rebuilds it. This checks the parts that make that happen.' }));
+    var rows = [], safe = /^[A-Za-z0-9._-]+$/.test(CFG.owner) && /^[A-Za-z0-9._-]+$/.test(CFG.repo);
+    var base = safe ? 'https://github.com/' + CFG.owner + '/' + CFG.repo : '';
+    function add(st, title, detail, linkText, href) { rows.push({ st: st, title: title, detail: detail, linkText: linkText, href: href }); }
+
+    var repo = await ghTry('', repoBase());
+    if (!repo.ok) throw new Error(friendly(repo.status, repo.json, CFG.owner + '/' + CFG.repo));
+    var def = repo.json.default_branch || 'main';
+    add(def === CFG.branch ? 'ok' : 'todo', 'The panel edits the main branch', def === CFG.branch ? 'Branch "' + CFG.branch + '" is the default branch.' : 'The panel saves to "' + CFG.branch + '" but the default branch is "' + def + '". The website only publishes from the default branch. Log out and log in with branch "' + def + '".');
+
+    var wf = await ghTry(contentsPath('.github/workflows/deploy.yml'));
+    if (wf.ok) {
+      var wtxt = ''; try { wtxt = b64dec(wf.json.content || ''); } catch (e) { wtxt = ''; }
+      var m = /branches:\s*\[([^\]]*)\]/.exec(wtxt), listed = m ? m[1].split(',').map(function (x) { return x.replace(/["'\s]/g, ''); }) : [];
+      if (m && listed.indexOf(CFG.branch) < 0) add('todo', 'The build file listens to the right branch', 'The build file only runs for: ' + listed.join(', ') + ', but you save to "' + CFG.branch + '". Edit .github/workflows/deploy.yml so "branches" includes "' + CFG.branch + '".', 'Open the file', base ? base + '/blob/' + encodeURIComponent(CFG.branch) + '/.github/workflows/deploy.yml' : '');
+      else add('ok', 'The build file exists', '.github/workflows/deploy.yml is in the repository.');
+    } else if (wf.status === 404) {
+      add('todo', 'The build file is missing', 'There is no .github/workflows/deploy.yml, so nothing rebuilds the website after you save. The folder name starts with a dot, so many upload tools skip it. In GitHub use "Add file > Create new file", type the name .github/workflows/deploy.yml and paste the contents from the zip.', 'Add the file on GitHub', base ? base + '/new/' + encodeURIComponent(CFG.branch) + '?filename=.github/workflows/deploy.yml' : '');
+    } else add('unk', 'The build file', 'Could not check it (status ' + wf.status + ').');
+
+    var pg2 = await ghTry('pages'), site = '';
+    if (pg2.ok) {
+      site = pg2.json.html_url || '';
+      var viaActions = pg2.json.build_type === 'workflow';
+      add(viaActions ? 'ok' : 'todo', 'Pages publishes from GitHub Actions', viaActions ? 'Publishing source is "GitHub Actions".' : 'Pages is set to "Deploy from a branch". Change it to "GitHub Actions", otherwise the rebuilt website is never published.', viaActions ? '' : 'Open Pages settings', viaActions || !base ? '' : base + '/settings/pages');
+    } else if (pg2.status === 404) add('todo', 'GitHub Pages is turned on', 'GitHub Pages is not enabled for this repository (or the token cannot see it). Turn it on and choose "GitHub Actions" as the source.', 'Open Pages settings', base ? base + '/settings/pages' : '');
+    else add('unk', 'GitHub Pages source', 'This token cannot read Pages settings. Check by hand: Settings > Pages > Source must be "GitHub Actions". (Optional: give the token "Pages: Read".)', 'Open Pages settings', base ? base + '/settings/pages' : '');
+
+    var runs = await ghTry('actions/runs?per_page=3');
+    if (runs.ok) {
+      var list = runs.json.workflow_runs || [];
+      if (!list.length) add('todo', 'A website build has run', 'No build has ever run in this repository. Either the build file is missing, GitHub Actions is turned off (Settings > Actions > General), or you have not saved since adding it.', 'Open Actions', base ? base + '/actions' : '');
+      else {
+        var r0 = list[0], when = r0.updated_at ? new Date(r0.updated_at).toLocaleString() : '';
+        if (r0.status !== 'completed') add('unk', 'Latest build', 'A build is running right now (' + String(r0.status).replace('_', ' ') + '). Wait a minute and run this check again.');
+        else if (r0.conclusion === 'success') add('ok', 'Latest build succeeded', 'Last successful build: ' + when + '.');
+        else add('todo', 'Latest build failed', 'The last build ended with "' + r0.conclusion + '" (' + when + '). Open the log to see the red step.', 'Open the build log', /^https:\/\/github\.com\//.test(r0.html_url || '') ? r0.html_url : '');
+      }
+    } else add('unk', 'Latest build', 'This token cannot read build status (give it "Actions: Read-only"). Check by hand in the Actions tab.', 'Open Actions', base ? base + '/actions' : '');
+
+    var bad = rows.filter(function (r) { return r.st === 'todo'; }).length;
+    view.appendChild(el('div', { class: 'msg ' + (bad ? 'err' : 'ok'), text: bad ? bad + ' thing(s) to fix before changes can appear on the website.' : 'Everything that can be checked from here looks right.' }));
+    var wrap = el('div');
+    rows.forEach(function (r) {
+      var right = [el('span', { class: 'tag ' + (r.st === 'ok' ? 'ok' : r.st === 'todo' ? 'todo' : 'unk'), text: r.st === 'ok' ? 'DONE' : r.st === 'todo' ? 'TO DO' : 'CHECK' })];
+      if (r.href) right.push(el('a', { class: 'tb', href: r.href, target: '_blank', rel: 'noopener', text: r.linkText + ' \u2197' }));
+      wrap.appendChild(el('div', { class: 'crow' }, [el('div', {}, [el('b', { text: r.title }), el('small', { text: r.detail })]), el('span', { class: 'rbtns' }, right)]));
+    });
+    view.appendChild(wrap);
+    var tips = [];
+    if (site) tips.push('Your website address right now: ' + site);
+    tips.push('If you are looking at weddingberriesbd.com: that address shows this website only after the custom domain is connected (Settings > Pages > Custom domain, plus the DNS records at your domain provider). Until then it may still show the old site, and only the address above shows your changes.');
+    tips.push('After a rebuild finishes, refresh the page with Ctrl+Shift+R (or open it in a private window) so the browser does not show an old copy.');
+    view.appendChild(el('div', { class: 'box' }, [el('b', { text: 'Also check' })].concat(tips.map(function (t) { return el('p', { class: 'muted', style: 'margin:6px 0 0', text: t }); }))));
+    view.appendChild(el('div', { class: 'addrow' }, [el('button', { type: 'button', class: 'btn ghost small', text: '\u21BB Run the check again', onclick: function () { renderSection('health'); } })]));
+  }
+
   async function renderChecklist(view) {
     view.appendChild(el('h1', { text: 'Launch checklist' }));
     view.appendChild(el('p', { class: 'muted', text: 'Text still written in [square brackets] is placeholder content. Replace it before the website goes public.' }));
@@ -560,7 +626,7 @@
       SECTIONS.filter(function (s) { return s.group === g; }).forEach(function (s) { nav.appendChild(el('button', { class: 'pill' + (S.section === s.id ? ' on' : ''), text: s.title, onclick: function () { go(s.id); } })); });
     });
     nav.appendChild(el('span', { class: 'sep', text: 'Tools' }));
-    [['checklist', 'Launch checklist'], ['preview', 'Live preview'], ['unused', 'Unused files']].forEach(function (t) { nav.appendChild(el('button', { class: 'pill' + (S.section === t[0] ? ' on' : ''), text: t[1], onclick: function () { go(t[0]); } })); });
+    [['health', 'Setup check'], ['checklist', 'Launch checklist'], ['preview', 'Live preview'], ['unused', 'Unused files']].forEach(function (t) { nav.appendChild(el('button', { class: 'pill' + (S.section === t[0] ? ' on' : ''), text: t[1], onclick: function () { go(t[0]); } })); });
     var top = el('div', { class: 'top' }, [
       el('div', { class: 'toprow' }, [
         el('div', { class: 'brand' }, ['Wedding ', el('span', { text: 'Berries Control' })]),
@@ -590,11 +656,12 @@
         });
         view.appendChild(el('div', { class: 'gtitle', text: 'Tools' }));
         var tools = el('div', { class: 'cards' });
-        [['checklist', 'Launch checklist', 'See which placeholder texts and settings still need real content.'], ['preview', 'Live preview', 'Look at the published website on desktop and phone size.'], ['unused', 'Unused files', 'Find uploaded photos and fonts nothing uses any more and delete them.']].forEach(function (t) { tools.appendChild(el('button', { class: 'card', onclick: function () { go(t[0]); } }, [el('b', { text: t[1] }), el('span', { text: t[2] })])); });
+        [['health', 'Setup check', 'Find out why saved changes do not appear on the website (build file, Pages setting, last build).'], ['checklist', 'Launch checklist', 'See which placeholder texts and settings still need real content.'], ['preview', 'Live preview', 'Look at the published website on desktop and phone size.'], ['unused', 'Unused files', 'Find uploaded photos and fonts nothing uses any more and delete them.']].forEach(function (t) { tools.appendChild(el('button', { class: 'card', onclick: function () { go(t[0]); } }, [el('b', { text: t[1] }), el('span', { text: t[2] })])); });
         view.appendChild(tools);
         view.appendChild(el('div', { class: 'box', style: 'margin-top:18px' }, [el('b', { text: 'Tips' }), el('p', { class: 'muted', style: 'margin:6px 0 0', text: 'A blank line in a long text starts a new paragraph. Photos are resized automatically before upload. Every save is one GitHub commit, so older versions can always be restored from the repository history.' })]));
         refreshBar(); return;
       }
+      if (id === 'health') { await renderHealth(view); refreshBar(); return; }
       if (id === 'unused') { await renderUnused(view); refreshBar(); return; }
       if (id === 'preview') { renderPreview(view); refreshBar(); return; }
       if (id === 'checklist') { await renderChecklist(view); refreshBar(); return; }

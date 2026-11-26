@@ -122,3 +122,5 @@ details.help code{background:#241a1f;border-radius:5px;padding:1px 6px;font-size
 .rbody>h3.sep3{grid-column:1/-1}
 .pv.contain{object-fit:contain}
 .pvframe.light{background:#ece7e2;border-style:solid}
+.tag.unk{color:#b9b0aa;border-color:#5a4d54;background:rgba(255,255,255,.04)}
+.crow small{display:block;margin-top:2px;max-width:640px}
