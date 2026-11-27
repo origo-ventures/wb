@@ -40,7 +40,7 @@
 .section--dark .btn:hover { background: var(--wb-ivory); border-color: var(--wb-ivory); color: var(--wb-ink); }
 .section--dark .btn--ghost { background: transparent; color: var(--wb-ivory); border-color: var(--wb-ivory); }
 .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
-.text-link { font-size: 0.9rem; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; border-bottom: 1px solid var(--wb-rose); padding-bottom: 2px; }
+.text-link { display: inline-block; font-size: 0.9rem; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: underline; text-decoration-color: var(--wb-rose); text-underline-offset: 0.45em; padding-block: 0.8rem; }
 
 /* ---------- Hero ---------- */
 .hero { position: relative; min-height: calc(100svh - var(--header-h)); display: grid; align-items: center; padding-block: var(--space-6); color: var(--wb-ivory); background: radial-gradient(120% 90% at 85% 10%, rgba(183, 110, 121, 0.55), transparent 55%), linear-gradient(160deg, #5A1530 0%, #3A1424 55%, #2A1F24 100%); overflow: hidden; }
@@ -75,7 +75,7 @@
 .numbered { list-style: none; border-top: 1px solid var(--color-border); }
 .numbered__item { display: grid; grid-template-columns: 3.5rem 1fr; gap: var(--space-2) var(--space-3); padding-block: var(--space-4); border-bottom: 1px solid var(--color-border); }
 .numbered__num { font-family: var(--font-display); font-size: 1.6rem; color: var(--wb-rose); }
-.numbered__title { margin-bottom: 0.4rem; }
+.numbered__title { margin-bottom: 0.4rem; font-size: var(--fs-h3); }
 .numbered__item p { grid-column: 2; min-width: 0; color: var(--color-text-soft); margin: 0; max-width: 46em; } /* phone: sits under the title, not in the narrow number column */
 @media (min-width: 860px) {
   .numbered__item { grid-template-columns: 5rem 1fr 1.4fr; align-items: baseline; }
@@ -130,6 +130,7 @@
 /* ---------- Footer ---------- */
 .site-footer { background: var(--wb-ink); color: rgba(251, 247, 242, 0.8); padding-block: var(--space-5) var(--space-4); }
 .site-footer .brand { color: var(--wb-ivory); }
+.site-footer .brand__mark { color: var(--wb-gold); border-color: var(--wb-gold); }
 .site-footer__row { display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; }
 .site-footer__links { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
 .site-footer__links a { color: rgba(251, 247, 242, 0.8); text-decoration: none; font-size: 0.9rem; letter-spacing: 0.06em; }

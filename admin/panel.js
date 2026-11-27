@@ -88,7 +88,12 @@
   async function loadFile(name) {
     var path = 'content/' + name;
     if (S.files[path]) return S.files[path];
-    var j = await gh('GET', contentsPath(path)), text;
+    var j, text;
+    try { j = await gh('GET', contentsPath(path)); }
+    catch (err) {
+      if (err.status === 404 && SCHEMA.DEFAULTS && SCHEMA.DEFAULTS[name]) { var nf = { path: path, name: name, sha: null, isNew: true, data: clone(SCHEMA.DEFAULTS[name]), origImgs: {} }; S.files[path] = nf; return nf; }
+      throw err;
+    }
     if (j.content) text = b64dec(j.content);
     else { var r = await fetch(repoBase() + '/' + contentsPath(path), { headers: headers({ 'Accept': 'application/vnd.github.raw+json' }), cache: 'no-store' }); text = await r.text(); }
     var data;
@@ -440,6 +445,7 @@
     try {
       paths.forEach(function (p) { normalizeFile(S.files[p]); });
       for (var c = 0; c < paths.length; c++) {            // refuse to overwrite a file somebody else changed meanwhile
+        if (S.files[paths[c]].isNew) continue;
         var live = await gh('GET', contentsPath(paths[c]));
         if (live.sha !== S.files[paths[c]].sha) { var ce = new Error('conflict'); ce.status = 409; throw new Error(friendly(409, { message: paths[c].split('/').pop() + ' was changed on GitHub' }, paths[c])); }
       }
@@ -449,7 +455,7 @@
       paths.forEach(function (p) { changes.push({ path: p, text: serialize(S.files[p]) }); });
       paths.forEach(function (p) { var old = S.files[p].origImgs; for (var op in old) { if (!refs[op] && op.indexOf('__p') > -1) changes.push({ path: op, remove: true }); } });
       var res = await commitChanges(changes, 'Control panel: update ' + paths.map(function (p) { return p.split('/').pop(); }).join(', '));
-      paths.forEach(function (p) { var f = S.files[p]; f.sha = res.blobs[p]; S.dirty[p] = false; f.origImgs = gather(f.data, {}); });
+      paths.forEach(function (p) { var f = S.files[p]; f.sha = res.blobs[p]; f.isNew = false; S.dirty[p] = false; f.origImgs = gather(f.data, {}); });
       Object.keys(S.pending).forEach(function (p) { if (refs[p]) delete S.pending[p]; });
       S.busy = false; refreshBar(); renderSection(S.section, true);
       note('ok', 'Saved to GitHub (' + paths.length + ' file' + (paths.length === 1 ? '' : 's') + (uploaded ? ', ' + uploaded + ' photo' + (uploaded === 1 ? '' : 's') : '') + ').');
@@ -521,7 +527,7 @@
     var d1 = el('button', { type: 'button', class: 'pill on2', text: 'Desktop' }), d2 = el('button', { type: 'button', class: 'pill', text: 'Phone' });
     d1.addEventListener('click', function () { stage.classList.remove('mob'); d1.className = 'pill on2'; d2.className = 'pill'; });
     d2.addEventListener('click', function () { stage.classList.add('mob'); d2.className = 'pill on2'; d1.className = 'pill'; });
-    view.appendChild(el('div', { class: 'pvbar' }, [sel, d1, d2, el('button', { type: 'button', class: 'tb', text: '\u21BB Refresh', onclick: function () { frame.src = '../' + sel.value + '?t=' + Date.now(); } }), el('a', { class: 'tb', href: '../', target: '_blank', rel: 'noopener', text: 'Open site \u2197' })]));
+    view.appendChild(el('div', { class: 'pvbar' }, [sel, d1, d2, el('button', { type: 'button', class: 'tb', text: '\u21BB Refresh', onclick: function () { frame.src = '../' + sel.value + '?t=' + Date.now(); } }), el('a', { class: 'tb', href: SITE_URL, target: '_blank', rel: 'noopener', text: 'Open site \u2197' })]));
     stage.appendChild(frame); view.appendChild(stage);
   }
 
@@ -591,6 +597,14 @@
     view.appendChild(el('div', { class: 'addrow' }, [el('button', { type: 'button', class: 'btn ghost small', text: '\u21BB Run the check again', onclick: function () { renderSection('health'); } })]));
   }
 
+  function formReady() {
+    var f = (S.files['content/form.json'] || {}).data || {};
+    if (f.enabled === false) return true;
+    var m = f.method || 'script', cd = (S.files['content/site.json'] || { data: {} }).data.contact || {};
+    if (m === 'script') return /^https:\/\/script\.google\.com\/(macros|a\/macros\/[A-Za-z0-9.-]+)\/s\/[A-Za-z0-9_-]+\/exec$/.test(String(f.scriptUrl || '').trim());
+    if (m === 'whatsapp') return !!String(cd.whatsapp || cd.phone || '').replace(/[^0-9]/g, '') && !isPlaceholder(cd.phone || cd.whatsapp);
+    return /@/.test(cd.email || '') && !isPlaceholder(cd.email);
+  }
   async function renderChecklist(view) {
     view.appendChild(el('h1', { text: 'Launch checklist' }));
     view.appendChild(el('p', { class: 'muted', text: 'Text still written in [square brackets] is placeholder content. Replace it before the website goes public.' }));
@@ -605,6 +619,7 @@
     var cd = S.files['content/site.json'].data.contact || {}, pj = S.files['content/projects.json'].data, lg = S.files['content/pages.json'].data.legal || {}, so = S.files['content/site.json'].data.social || {};
     var checks = [
       ['Email address is filled in', cd.email && !isPlaceholder(cd.email), 'contactinfo'], ['Phone number is filled in', cd.phone && !isPlaceholder(cd.phone), 'contactinfo'],
+      ['The contact form can deliver messages', formReady(), 'contactform'],
       ['At least one project is marked Featured', pj.some(function (p) { return p.featured; }), 'projects'], ['Privacy policy text is added', (lg.privacy || []).length > 0, 'legal'],
       ['Terms text is added', (lg.terms || []).length > 0, 'legal'], ['At least one social link is added', Object.keys(so).some(function (k) { return so[k]; }), 'social']
     ];
@@ -616,25 +631,60 @@
   }
 
   /* ------------------------------------------------------------ views */
+  var SITE_URL = 'https://weddingberriesbd.com';
+  var TOOLS = [['health', 'Setup check'], ['checklist', 'Launch checklist'], ['preview', 'Live preview'], ['unused', 'Unused files']];
+  function sectionTitle(id) { if (id === 'dash') return 'Dashboard'; var sc = secById(id); if (sc) return sc.title; for (var i = 0; i < TOOLS.length; i++) if (TOOLS[i][0] === id) return TOOLS[i][1]; return ''; }
+  function drawerEl() { return document.getElementById('drawer'); }
+  function drawerOpen() { var d = drawerEl(); return !!(d && d.classList.contains('open')); }
+  function openDrawer() {
+    var d = drawerEl(); if (!d) return;
+    d.classList.add('open'); document.getElementById('scrim').hidden = false; document.getElementById('burger').setAttribute('aria-expanded', 'true'); document.body.classList.add('noscroll');
+    var cur = d.querySelector('[aria-current="page"]') || d.querySelector('.item'); if (cur) { cur.focus(); cur.scrollIntoView({ block: 'nearest' }); }
+  }
+  function closeDrawer(returnFocus) {
+    var d = drawerEl(); if (!d) return;
+    d.classList.remove('open'); var sc = document.getElementById('scrim'); if (sc) sc.hidden = true;
+    var bg = document.getElementById('burger'); if (bg) { bg.setAttribute('aria-expanded', 'false'); if (returnFocus) bg.focus(); }
+    document.body.classList.remove('noscroll');
+  }
+  document.addEventListener('keydown', function (e) {
+    if (!drawerOpen()) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeDrawer(true); return; }
+    if (e.key === 'Tab') {                               // keep keyboard focus inside the open menu
+      var f = Array.prototype.slice.call(drawerEl().querySelectorAll('button, a[href]')).filter(function (x) { return !x.disabled; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
   function shell() {
+    document.body.classList.remove('noscroll');
     app.textContent = '';
     var groups = [], seen = {};
     SECTIONS.forEach(function (s) { if (!seen[s.group]) { seen[s.group] = 1; groups.push(s.group); } });
-    var nav = el('div', { class: 'nav' }, [el('button', { class: 'pill' + (S.section === 'dash' ? ' on' : ''), text: 'Dashboard', onclick: function () { go('dash'); } })]);
+    function item(id, text) { return el('button', { type: 'button', class: 'item', 'aria-current': S.section === id ? 'page' : null, text: text, onclick: function () { go(id); } }); }
+    var navEl = el('nav', { class: 'dnav', 'aria-label': 'Control panel sections' }, [item('dash', 'Dashboard')]);
     groups.forEach(function (g) {
-      nav.appendChild(el('span', { class: 'sep', text: g }));
-      SECTIONS.filter(function (s) { return s.group === g; }).forEach(function (s) { nav.appendChild(el('button', { class: 'pill' + (S.section === s.id ? ' on' : ''), text: s.title, onclick: function () { go(s.id); } })); });
+      navEl.appendChild(el('div', { class: 'dgroup', text: g }));
+      SECTIONS.filter(function (s) { return s.group === g; }).forEach(function (s) { navEl.appendChild(item(s.id, s.title)); });
     });
-    nav.appendChild(el('span', { class: 'sep', text: 'Tools' }));
-    [['health', 'Setup check'], ['checklist', 'Launch checklist'], ['preview', 'Live preview'], ['unused', 'Unused files']].forEach(function (t) { nav.appendChild(el('button', { class: 'pill' + (S.section === t[0] ? ' on' : ''), text: t[1], onclick: function () { go(t[0]); } })); });
-    var top = el('div', { class: 'top' }, [
-      el('div', { class: 'toprow' }, [
-        el('div', { class: 'brand' }, ['Wedding ', el('span', { text: 'Berries Control' })]),
-        el('div', { class: 'toolbtns' }, [el('a', { class: 'tb', href: '../', target: '_blank', rel: 'noopener', text: 'View site \u2197' }), el('button', { class: 'tb', text: 'Reload from GitHub', onclick: reloadAll }), el('button', { class: 'tb', text: 'Log out', onclick: logout })])
-      ]), nav]);
+    navEl.appendChild(el('div', { class: 'dgroup', text: 'Tools' }));
+    TOOLS.forEach(function (t) { navEl.appendChild(item(t[0], t[1])); });
+    var drawer = el('aside', { id: 'drawer', class: 'drawer', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Menu' }, [
+      el('div', { class: 'dhead' }, [el('div', { class: 'brand' }, ['Wedding ', el('span', { text: 'Berries' })]), el('button', { type: 'button', class: 'dclose', 'aria-label': 'Close menu', text: '\u2715', onclick: function () { closeDrawer(true); } })]),
+      navEl,
+      el('div', { class: 'dfoot' }, [el('a', { class: 'tb', href: SITE_URL, target: '_blank', rel: 'noopener', text: 'View site \u2197' }), el('button', { type: 'button', class: 'tb', text: 'Reload from GitHub', onclick: reloadAll }), el('button', { type: 'button', class: 'tb', text: 'Log out', onclick: logout })])
+    ]);
+    var scrim = el('div', { id: 'scrim', class: 'scrim', hidden: true, onclick: function () { closeDrawer(true); } });
+    var burger = el('button', { id: 'burger', class: 'burger', type: 'button', 'aria-label': 'Open menu', 'aria-expanded': 'false', 'aria-controls': 'drawer', onclick: function () { drawerOpen() ? closeDrawer(true) : openDrawer(); } }, [el('span', { class: 'burger__bars' })]);
+    var top = el('div', { class: 'top' }, [el('div', { class: 'toprow' }, [
+      el('div', { class: 'topleft' }, [burger, el('div', { class: 'brand' }, ['Wedding ', el('span', { text: 'Berries Control' })]), el('span', { class: 'crumb', id: 'crumb', text: sectionTitle(S.section) })]),
+      el('div', { class: 'toolbtns' }, [el('a', { class: 'tb', href: SITE_URL, target: '_blank', rel: 'noopener', text: 'View site \u2197' })])
+    ])]);
     main = el('main', { class: 'wrap' }, [el('div', { id: 'flash' }), el('div', { id: 'view' })]);
     var bar = el('div', { class: 'savebar' }, [el('span', { class: 'st', id: 'st', text: 'No unsaved changes' }), el('button', { class: 'btn', id: 'savebtn', text: 'Save to GitHub', disabled: true, onclick: saveAll })]);
-    app.appendChild(top); app.appendChild(main); app.appendChild(bar);
+    app.appendChild(top); app.appendChild(main); app.appendChild(bar); app.appendChild(scrim); app.appendChild(drawer);
   }
   function go(id) { S.section = id; shell(); renderSection(id); }
 

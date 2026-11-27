@@ -1,6 +1,7 @@
 /* Wedding Berries design tokens (Phase 02). Single source of truth for the design system.
    The Admin "Advanced Settings Editor" will later write overrides to these same variables. */
 :root {
+  color-scheme: light;
   /* Colour: neutrals */
   --wb-ivory: #FBF7F2;      /* page background */
   --wb-cream: #F3EBE1;      /* alternate section background */

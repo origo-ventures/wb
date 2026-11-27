@@ -64,3 +64,36 @@
 .site-footer__contact { margin: var(--space-3) 0 0; font-size: 0.9rem; }
 .site-footer__contact a { color: rgba(251, 247, 242, 0.85); }
 .site-footer__social { margin-top: var(--space-2); }
+
+/* ---------- Contact form ---------- */
+@media (min-width: 900px) { .split--form { grid-template-columns: 1fr 1.6fr; } }
+.wbform__grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: var(--space-3); }
+@media (min-width: 640px) { .wbform--two .wbform__grid { grid-template-columns: 1fr 1fr; } .wbform--two .wbfield--full { grid-column: 1 / -1; } }
+.wbfield { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.wbfield label:not(.wbconsent) { font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+.req { color: var(--wb-berry); }
+.wbform input:not([type=checkbox]), .wbform select, .wbform textarea { font: inherit; font-size: 1.02rem; width: 100%; color: var(--color-text); background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0.85rem 1rem; min-height: 52px; transition: border-color var(--dur-fast), box-shadow var(--dur-fast); }
+.wbform textarea { min-height: 140px; resize: vertical; }
+.wbform select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%237A1F3D' stroke-width='1.6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.6rem; }
+.wbform input:focus, .wbform select:focus, .wbform textarea:focus { outline: none; border-color: var(--wb-berry); box-shadow: 0 0 0 3px rgba(122, 31, 61, 0.18); }
+.wbform--underline input:not([type=checkbox]), .wbform--underline select, .wbform--underline textarea { background: transparent; border: 0; border-bottom: 1px solid var(--wb-ink); border-radius: 0; padding-inline: 0; }
+.wbform--underline input:focus, .wbform--underline select:focus, .wbform--underline textarea:focus { box-shadow: none; border-bottom-color: var(--wb-berry); border-bottom-width: 2px; }
+.wbfield.has-error input:not([type=checkbox]), .wbfield.has-error select, .wbfield.has-error textarea { border-color: #B3261E; }
+.wberr { margin: 0; min-height: 0; font-size: 0.86rem; color: #B3261E; }
+.wberr:empty { display: none; }
+.wbconsent { display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem; text-transform: none; letter-spacing: 0; color: var(--color-text); cursor: pointer; }
+.wbconsent input { width: 22px; height: 22px; min-height: 0; margin-top: 2px; accent-color: var(--wb-berry); flex: 0 0 auto; }
+.wbhp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.wbform__req { margin: var(--space-2) 0 0; font-size: 0.82rem; color: var(--color-text-soft); }
+.wbform .btn { margin-top: var(--space-3); min-width: 220px; }
+.wbform__status { margin-top: var(--space-2); font-size: 0.95rem; min-height: 1.4em; }
+.wbform__status.is-error { color: #B3261E; }
+.wbform__status a { color: var(--wb-berry); }
+.wbform__done { text-align: center; padding: var(--space-5) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: #fff; margin-top: var(--space-3); }
+.wbform__done:focus { outline: none; }
+.wbform__tick { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto var(--space-2); background: var(--wb-berry); position: relative; }
+.wbform__tick::after { content: ""; position: absolute; left: 22px; top: 14px; width: 14px; height: 26px; border: solid #fff; border-width: 0 4px 4px 0; transform: rotate(45deg); }
+.wbform__done[hidden] { display: none; }
+.wbform[hidden] { display: none; }
+
+.team__name { font-size: var(--fs-h3); }

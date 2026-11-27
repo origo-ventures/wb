@@ -81,6 +81,7 @@ TEAM = load("team.json", [])
 TESTI = load("testimonials.json", [])
 FAQ = load("faq.json", [])
 DESIGN = load("design.json", {})
+FORM = load("form.json", {})
 
 BRAND = (SITE.get("brand") or {}).get("name") or "Wedding Berries"
 CONTACT = SITE.get("contact") or {}
@@ -192,9 +193,15 @@ def design_css():
     href = ("https://fonts.googleapis.com/css2?" + "&".join(specs) + "&display=swap") if specs else None
     scale = SCALES.get(fc.get("scale"), 1)
     logo_h = LOGO_H.get((SITE.get("brand") or {}).get("logoHeight"), 46)
+    cream = mix(col["ivory"], col["gold"], 0.16)
+    muted = mix(col["ink"], col["ivory"], 0.38)
+    for t in [x / 100 for x in range(38, 0, -2)]:               # lightest grey that is still readable (4.6:1+) on page AND alternate backgrounds
+        cand = mix(col["ink"], col["ivory"], t)
+        if contrast(cand, col["ivory"]) >= 4.6 and contrast(cand, cream) >= 4.6:
+            muted = cand; break
     rules = ";".join([
         f"--wb-ivory:{col['ivory']}", f"--wb-cream:{mix(col['ivory'], col['gold'], 0.16)}", f"--wb-line:{mix(col['ivory'], col['ink'], 0.12)}",
-        f"--wb-ink:{col['ink']}", f"--wb-muted:{mix(col['ink'], col['ivory'], 0.38)}",
+        f"--wb-ink:{col['ink']}", f"--wb-muted:{muted}",
         f"--wb-berry:{col['berry']}", f"--wb-berry-deep:{darken(col['berry'], 0.74)}", f"--wb-rose:{col['rose']}", f"--wb-rose-text:{darken(col['rose'], 0.77)}", f"--wb-gold:{col['gold']}",
         f"--font-display:{disp['stack']}", f"--font-body:{body['stack']}",
         f"--w-head:{disp['w_head']}", f"--w-brand:{disp['w_brand']}", f"--h-scale:{scale}", f"--logo-h:{logo_h}px",
@@ -297,8 +304,15 @@ def analytics():
 DESIGN_CSS, GOOGLE_HREF, FONT_PRELOADS = design_css()
 FX_FLAGS = " ".join("no-" + k for k in ("petals", "cursor", "pageTransitions") if FX.get(k) is False).replace("pageTransitions", "transitions")
 
+def clean_desc(d):
+    d = (d or "").strip()
+    if not d or "[" in d:
+        d = ((SITE.get("seo") or {}).get("description") or "").strip()
+    return d if "[" not in d else ""
+
 def page(file, title, desc, body, *, noindex=False, preload=False, features=(), prefix="", jsonld=None):
     full_title = BRAND if file == "index.html" else f"{title} | {BRAND}"
+    desc = clean_desc(desc) or f"{title} | {BRAND}"
     url = f'{DOMAIN}/{"" if file == "index.html" else file}'
     robots = '<meta name="robots" content="noindex">\n' if noindex else ""
     css = "".join(f'<link rel="stylesheet" href="{prefix}assets/css/{n}.css">\n' for n in ("tokens", "design.generated", "base", "components", "animations", "features"))
@@ -321,6 +335,8 @@ def page(file, title, desc, body, *, noindex=False, preload=False, features=(), 
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="{url}">
 <meta name="theme-color" content="{DESIGN_COLORS['ivory']}">
+<meta name="color-scheme" content="light">
+<noscript><style>html .nav-toggle{{display:none}}html .site-header{{position:static;height:auto}}html .site-header__inner{{flex-wrap:wrap;padding-block:.75rem}}html .nav{{display:block}}html .nav__list{{flex-wrap:wrap;gap:.5rem 1.25rem}}</style></noscript>
 {HEAD_SCRIPT}
 {favicon(prefix)}{font_links(prefix)}{css}{ld}{analytics()}</head>
 <body>
@@ -369,13 +385,13 @@ def cta():
   <span class="eyebrow" data-anim="fade-up">{e(c.get("eyebrow") or "Begin here")}</span><h2 data-anim="words">{e(c.get("title") or "")}</h2>{txt}{row}
 </div></section>'''
 
-def numbered(items, links=None):
+def numbered(items, links=None, tag="h3"):
     li = ""
     for i, it in enumerate(items, 1):
         t = e(it.get("title"))
         if links and links[i - 1]:
             t = f'<a href="{links[i - 1]}" class="numbered__link">{t}</a>'
-        li += f'<li class="numbered__item"><span class="numbered__num">{i:02d}</span><h3 class="numbered__title">{t}</h3><p>{e(it.get("text") or it.get("summary"))}</p></li>'
+        li += f'<li class="numbered__item"><span class="numbered__num">{i:02d}</span><{tag} class="numbered__title">{t}</{tag}><p>{e(it.get("text") or it.get("summary"))}</p></li>'
     return f'<ol class="numbered" data-stagger="0.12">{li}</ol>' if li else ""
 
 def media(path, aria="Image"):
@@ -383,12 +399,12 @@ def media(path, aria="Image"):
         return f'<div class="split__media" data-anim="clip-up" role="img" aria-label="{e(aria)}"></div>'
     return f'<div class="split__media" data-anim="clip-up"><div class="parallax-wrap" data-parallax="0.07">{img(path)}</div></div>'
 
-def project_card(i):
+def project_card(i, tag="h3"):
     p = PROJECTS[i]; slug = PROJECT_SLUGS[i]
     cat = slugify(p.get("category")) if p.get("category") else ""
     media_html = img(p.get("cover") or (p.get("images") or [""])[0])
     return (f'<a class="card" href="project-{slug}.html" data-cursor="View" data-cat="{cat}"><div class="card__media" data-tilt>{media_html}</div>'
-            f'<div class="card__meta"><span class="card__kicker">{e(p.get("venue") or p.get("category"))}</span><h3 class="card__title">{e(p.get("title"))}</h3></div></a>')
+            f'<div class="card__meta"><span class="card__kicker">{e(p.get("venue") or p.get("category"))}</span><{tag} class="card__title">{e(p.get("title"))}</{tag}></div></a>')
 
 def gallery_item(path, caption, cat=""):
     if not img_ok(path):
@@ -476,7 +492,7 @@ def build_about():
 def build_services():
     s = pg("services")
     body = page_hero(s.get("eyebrow"), s.get("title"), s.get("lead"))
-    body += f'<section class="section"><div class="container">{numbered(SERVICES, [f"service-{x}.html" for x in SERVICE_SLUGS])}</div></section>'
+    body += f'<section class="section"><div class="container">{numbered(SERVICES, [f"service-{x}.html" for x in SERVICE_SLUGS], "h2")}</div></section>'
     if s.get("process"):
         body += f'<section class="section section--alt"><div class="container">{head(s.get("processEyebrow"), s.get("processTitle"))}{numbered(s["process"])}</div></section>'
     add("services.html", "Services", s.get("lead") or "Our services", body + cta())
@@ -496,7 +512,7 @@ def build_portfolio():
     if len(cats) > 1:
         chips = '<div class="chips" role="group" aria-label="Filter projects"><button class="chip" type="button" data-filter="all" aria-pressed="true">' + e(p.get("allLabel") or "All") + "</button>" + \
                 "".join(f'<button class="chip" type="button" data-filter="{slugify(c)}" aria-pressed="false">{e(c)}</button>' for c in cats) + "</div>"
-    grid = "".join(project_card(i) for i in range(len(PROJECTS)))
+    grid = "".join(project_card(i, "h2") for i in range(len(PROJECTS)))
     body = page_hero(p.get("eyebrow"), p.get("title"), p.get("lead")) + f'<section class="section"><div class="container">{chips}<div class="grid grid--3" data-stagger="0.1">{grid}</div></div></section>' + cta()
     add("portfolio.html", "Portfolio", p.get("lead") or "Our work", body, features=("gallery",))
     for i, pr in enumerate(PROJECTS):
@@ -514,7 +530,7 @@ def build_team():
     t = pg("team")
     def card(m):
         ph = img(m.get("photo"), m.get("name") or "", cls="avatar-img") if img_ok(m.get("photo")) else '<div class="avatar-ph"></div>'
-        return f'<div>{ph}<h3>{e(m.get("name"))}</h3><p class="card__kicker">{e(m.get("role"))}</p><p>{e(m.get("bio"))}</p></div>'
+        return f'<div>{ph}<h2 class="team__name">{e(m.get("name"))}</h2><p class="card__kicker">{e(m.get("role"))}</p><p>{e(m.get("bio"))}</p></div>'
     body = page_hero(t.get("eyebrow"), t.get("title"), t.get("lead")) + f'<section class="section"><div class="container"><div class="grid grid--3" data-stagger="0.15">{"".join(card(m) for m in TEAM)}</div></div></section>' + cta()
     add("team.html", "Team", t.get("lead") or "Our team", body)
 
@@ -523,6 +539,71 @@ def build_testimonials():
     rows = "".join(f'<div data-anim="fade-up" class="testi"><p class="quote">&ldquo;{e(x.get("quote"))}&rdquo;</p><p class="quote-by">{e(x.get("names"))}{(" &middot; " + e(x.get("event"))) if x.get("event") else ""}</p></div>' for x in TESTI)
     body = page_hero(t.get("eyebrow"), t.get("title"), t.get("lead")) + f'<section class="section"><div class="container container--narrow">{rows}</div></section>' + cta()
     add("testimonials.html", "Testimonials", "Kind words from " + BRAND + " couples.", body)
+
+
+# ---------------------------------------------------------------- contact form
+SCRIPT_RE = re.compile(r"^https://script\.google\.com/(macros|a/macros/[A-Za-z0-9.-]+)/s/[A-Za-z0-9_-]+/exec$")
+FIELD_TYPES = ("text", "email", "tel", "date", "number", "select", "textarea")
+
+def render_form(c):
+    """The enquiry form (settings come from content/form.json, edited in the Control Panel)."""
+    f = FORM or {}
+    head = f'<h2>{e(c.get("formTitle") or "Send an enquiry")}</h2>' + (f'<p>{e(c.get("formNote"))}</p>' if c.get("formNote") else "")
+    fields = [x for x in (f.get("fields") or []) if str(x.get("label") or "").strip()]
+    if f.get("enabled", True) is False or not fields:
+        return head
+    method = f.get("method") if f.get("method") in ("script", "whatsapp", "email") else "script"
+    url = (f.get("scriptUrl") or "").strip()
+    if url and not SCRIPT_RE.match(url):
+        print("WARNING: contact form link is not a valid Google Apps Script web app link (it must end with /exec); the form will not send.")
+        url = ""
+    wa = re.sub(r"[^0-9]", "", CONTACT.get("whatsapp") or CONTACT.get("phone") or "")
+    if real(CONTACT.get("whatsapp") or CONTACT.get("phone")) is False:
+        wa = ""
+    mail = CONTACT.get("email") if real(CONTACT.get("email")) and "@" in (CONTACT.get("email") or "") else ""
+    missing = {"script": "" if url else "an Apps Script link", "whatsapp": "" if wa else "a phone/WhatsApp number in Site > Contact info", "email": "" if mail else "an email address in Site > Contact info"}[method]
+    if missing:
+        print(f"NOTE: the contact form is hidden because it has no way to deliver messages yet (needs {missing}). It appears automatically once that is set.")
+        return head
+    two = f.get("layout") != "single"
+    parts = []
+    for i, fd in enumerate(fields):
+        t = fd.get("type") if fd.get("type") in FIELD_TYPES else "text"
+        label = str(fd.get("label")).strip()
+        fid = f"wbf-{i}"
+        full = (not two) or fd.get("width") == "full" or t == "textarea"
+        req = bool(fd.get("required"))
+        low = label.lower()
+        ac = "name" if (t == "text" and "name" in low) else {"email": "email", "tel": "tel"}.get(t, "off")
+        attrs = f' id="{fid}" name="{e(label)}"' + (' required aria-required="true"' if req else "") + f' autocomplete="{ac}" aria-describedby="{fid}-err"'
+        ph = f' placeholder="{e(fd.get("placeholder"))}"' if fd.get("placeholder") and t != "select" else ""
+        if t == "textarea":
+            ctl = f'<textarea{attrs}{ph} rows="5" maxlength="4000"></textarea>'
+        elif t == "select":
+            opts = "".join(f'<option value="{e(o)}">{e(o)}</option>' for o in (fd.get("options") or []) if str(o).strip())
+            ctl = f'<select{attrs}><option value="">{e(fd.get("placeholder") or "Choose one")}</option>{opts}</select>'
+        else:
+            extra = ' inputmode="tel"' if t == "tel" else (' inputmode="email" autocapitalize="off"' if t == "email" else "")
+            ctl = f'<input type="{t}"{attrs}{ph}{extra} maxlength="200">'
+        star = ' <span class="req" aria-hidden="true">*</span>' if req else ""
+        parts.append(f'<div class="wbfield wbfield--{"full" if full else "half"}"><label for="{fid}">{e(label)}{star}</label>{ctl}<p class="wberr" id="{fid}-err" role="alert"></p></div>')
+    consent = ""
+    if f.get("consentOn", True):
+        consent = (f'<div class="wbfield wbfield--full"><label class="wbconsent"><input type="checkbox" id="wbf-consent" name="Consent" value="Yes" required aria-required="true" aria-describedby="wbf-consent-err">'
+                   f'<span>{e(f.get("consentText") or "I agree to be contacted about my enquiry.")} <a href="privacy-policy.html">Privacy policy</a></span></label><p class="wberr" id="wbf-consent-err" role="alert"></p></div>')
+    submit = f.get("submitText") or "Send enquiry"
+    fb = "1" if f.get("whatsappFallback", True) else "0"
+    data = (f' data-wbform data-method="{method}" data-script="{e(url)}" data-wa="{e(wa)}" data-mail="{e(mail)}" data-sending="{e(f.get("sendingText") or "Sending…")}" '
+            f'data-error="{e(f.get("errorText") or "We could not send your message. Please try again in a moment.")}" data-fallback="{fb}"')
+    cls = f'wbform wbform--{"two" if two else "single"} wbform--{"underline" if f.get("look") == "underline" else "boxed"}'
+    has_req = any(x.get("required") for x in fields) or f.get("consentOn", True)
+    form = (f'<form class="{cls}"{data} novalidate><div class="wbform__grid">{"".join(parts)}{consent}</div>'
+            f'<div class="wbhp" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>'
+            + ('<p class="wbform__req"><span class="req" aria-hidden="true">*</span> required</p>' if has_req else "")
+            + f'<button class="btn" type="submit">{e(submit)}</button><div class="wbform__status" role="status" aria-live="polite"></div></form>')
+    done = (f'<div class="wbform__done" hidden tabindex="-1"><div class="wbform__tick" aria-hidden="true"></div><h3>{e(f.get("successTitle") or "Thank you!")}</h3>'
+            f'<p>{e(f.get("successText") or "Your message has been sent.")}</p><button class="btn btn--ghost" type="button" data-wbform-again>Send another message</button></div>')
+    return head + form + done
 
 def build_contact():
     c = pg("contact"); lines = []
@@ -538,10 +619,10 @@ def build_contact():
     if real(CONTACT.get("mapQuery")):
         mp = f'<div class="map" data-anim="fade-up"><iframe title="Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q={urllib.parse.quote(CONTACT["mapQuery"])}&amp;output=embed"></iframe></div>'
     body = page_hero(c.get("eyebrow"), c.get("title"), c.get("lead"))
-    body += f'''<section class="section"><div class="container"><div class="split" style="align-items:start">
+    body += f'''<section class="section"><div class="container"><div class="split split--form" style="align-items:start">
   <div class="stack" data-anim="fade-up"><h2>{e(c.get("directTitle"))}</h2>{"".join(lines)}</div>
-  <div class="stack" data-anim="fade-up" data-delay="0.15"><h2>{e(c.get("formTitle"))}</h2><p>{e(c.get("formNote"))}</p></div></div>{mp}</div></section>'''
-    add("contact.html", "Contact", c.get("lead") or "Contact " + BRAND, body)
+  <div class="stack wbform-wrap" data-anim="fade-up" data-delay="0.15">{render_form(c)}</div></div>{mp}</div></section>'''
+    add("contact.html", "Contact", c.get("lead") or "Contact " + BRAND, body, features=("contact-form",))
 
 def build_faq():
     f = pg("faq")
@@ -572,7 +653,7 @@ def placeholders():
             for x in v: walk(x, where)
         elif isinstance(v, str) and v.strip().startswith("[") and v.strip().endswith("]"):
             found[where] = found.get(where, 0) + 1
-    for name in ("site", "pages", "services", "projects", "team", "testimonials", "faq"):
+    for name in ("site", "pages", "services", "projects", "team", "testimonials", "faq", "form"):
         walk(load(name + ".json", {}), name)
     return found
 

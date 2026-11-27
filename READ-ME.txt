@@ -1,7 +1,18 @@
-Safe update: only code files. Upload each file to the SAME folder in your repository (same name replaces the old file).
-These files do NOT contain any of your content, photos, logo or fonts.
+SAFE UPDATE: code files only. They contain NONE of your content, photos, logo, fonts or settings.
+Upload each file into the SAME folder of your GitHub repository (same name replaces the old file). New files (contact-form.js, Code.gs, contact-form-setup.md) are simply added.
+Do NOT touch the content/ folder. Replace admin/panel.js, admin/panel.css and admin/schema.js together.
+After uploading: wait for the build (Actions tab), then open the Control Panel (hard refresh with Ctrl+Shift+R).
 
-assets/css/components.css
 admin/panel.js
 admin/panel.css
+admin/schema.js
+assets/css/animations.css
+assets/css/components.css
+assets/css/features.css
+assets/css/tokens.css
+assets/js/animations/preloader.js
+assets/js/core/main.js
+assets/js/features/contact-form.js
 tools/build_site.py
+apps-script/Code.gs
+docs/contact-form-setup.md
